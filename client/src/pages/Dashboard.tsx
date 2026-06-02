@@ -218,7 +218,6 @@ export default function Dashboard() {
               <div className="flex flex-col items-center justify-center py-12">
                 <Illustration name="bell" />
                 <p className="text-gray-500 dark:text-gray-400 font-medium mt-4">No notifications yet. You're all caught up!</p>
-                <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">You're all caught up</p>
               </div>
             </div>
           ) : (

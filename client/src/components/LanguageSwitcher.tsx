@@ -23,7 +23,7 @@ export default function LanguageSwitcher() {
           onClick={() => handleChange(lang.code)}
           className={`text-xs px-2 py-1 rounded-[8px] font-medium transition cursor-pointer ${
             i18n.language === lang.code
-              ? 'bg-[#6C4CF1] text-white'
+              ? 'bg-primary text-white'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
           }`}
           aria-label={lang.name}

@@ -6,6 +6,7 @@ import { useOnlineStore } from '../store/onlineStore';
 import { LoadingPage } from '../components/ui/LottieLoader';
 import SendRequestModal from '../components/forms/SendRequestModal';
 import { getAvailabilityColor, formatRelativeTime } from '../utils/helpers';
+import { BackButton } from '../components/ui/BackButton';
 import type { User, ReviewResponse } from '../types';
 
 export default function DeveloperProfile() {
@@ -83,7 +84,7 @@ export default function DeveloperProfile() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <Link to="/discover" className="inline-flex items-center gap-1 text-sm text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] transition-colors">&larr; Back to Discover</Link>
+      <BackButton label="Back to Discover" />
       <div className="bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
         <div className="flex items-start justify-between">
           <div>

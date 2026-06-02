@@ -18,8 +18,11 @@ export default function ProjectList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Projects</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link to="/dashboard" className="text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] transition-colors text-sm">&larr; Back</Link>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Projects</h1>
+        </div>
         <Link to="/projects/new" className="bg-gradient-to-r from-[#6C4CF1] to-[#5538D6] text-white px-5 py-2.5 rounded-[12px] font-semibold shadow-lg shadow-[#6C4CF1]/20 text-sm transition">
           New Project
         </Link>

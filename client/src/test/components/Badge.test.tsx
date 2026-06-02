@@ -10,8 +10,8 @@ describe('Badge', () => {
 
   it('applies primary variant', () => {
     const { container } = render(<Badge variant="primary">Primary</Badge>)
-    expect(container.firstChild).toHaveClass('bg-[#6C4CF1]/10')
-    expect(container.firstChild).toHaveClass('text-[#6C4CF1]')
+    expect(container.firstChild).toHaveClass('bg-primary/10')
+    expect(container.firstChild).toHaveClass('text-primary')
   })
 
   it('applies success variant', () => {

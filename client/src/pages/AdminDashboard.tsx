@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/client';
 import { LoadingPage } from '../components/ui/LottieLoader';
 import { formatDate } from '../utils/helpers';
@@ -95,7 +96,10 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Admin Dashboard</h1>
+      <div className="flex items-center gap-3">
+        <Link to="/dashboard" className="text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] transition-colors text-sm">&larr; Back</Link>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Admin Dashboard</h1>
+      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {stats && [

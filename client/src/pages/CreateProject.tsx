@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,7 +42,10 @@ export default function CreateProject() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Create Project</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <Link to="/projects" className="text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] transition-colors text-sm">&larr; Back</Link>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Create Project</h1>
+      </div>
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-6 space-y-5" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
         <div>
           <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1.5 font-medium">Project Name</label>

@@ -58,8 +58,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-5">
             <Link to="/dashboard" className="flex items-center gap-2 shrink-0">
-              <span className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-[#6C4CF1] to-[#9A7DF9] flex items-center justify-center text-white text-sm font-bold shadow-sm">DC</span>
-              <span className="text-lg font-bold bg-gradient-to-r from-[#6C4CF1] to-[#8B6FF7] bg-clip-text text-transparent">DevConnect</span>
+              <span className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-primary to-[#9A7DF9] flex items-center justify-center text-white text-sm font-bold shadow-sm">DC</span>
+              <span className="text-lg font-bold bg-gradient-to-r from-primary to-[#8B6FF7] bg-clip-text text-transparent">DevConnect</span>
             </Link>
             <div className="hidden md:flex items-center gap-0.5">
               {navLinks.map((l) => (
@@ -68,7 +68,7 @@ export default function Navbar() {
                   to={l.to}
                   className={`px-3.5 py-2 rounded-[12px] text-sm font-medium transition-all ${
                     isActive(l.to)
-                      ? 'bg-[#6C4CF1]/10 text-[#6C4CF1]'
+                      ? 'bg-primary/10 text-primary'
                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                   }`}
                 >
@@ -97,7 +97,7 @@ export default function Navbar() {
             <ThemeToggle />
             <Link
               to="/notifications"
-              className="relative p-2.5 text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] hover:bg-[#6C4CF1]/5 rounded-[12px] transition-all"
+              className="relative p-2.5 text-gray-400 dark:text-gray-500 hover:text-primary hover:bg-primary/5 rounded-[12px] transition-all"
               aria-label="Notifications"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,9 +111,9 @@ export default function Navbar() {
             </Link>
             <Link
               to="/profile"
-              className="hidden md:flex items-center gap-2.5 pl-2.5 pr-4 py-1.5 rounded-[14px] bg-gray-50 dark:bg-gray-800/50 hover:bg-[#6C4CF1]/5 border border-gray-100 dark:border-gray-800 hover:border-[#6C4CF1]/20 transition-all"
+              className="hidden md:flex items-center gap-2.5 pl-2.5 pr-4 py-1.5 rounded-[14px] bg-gray-50 dark:bg-gray-800/50 hover:bg-primary/5 border border-gray-100 dark:border-gray-800 hover:border-primary/20 transition-all"
             >
-              <span className="w-7 h-7 rounded-[10px] bg-gradient-to-br from-[#6C4CF1] to-[#8B6FF7] text-white text-[11px] font-bold flex items-center justify-center shadow-sm">
+              <span className="w-7 h-7 rounded-[10px] bg-gradient-to-br from-primary to-[#8B6FF7] text-white text-[11px] font-bold flex items-center justify-center shadow-sm">
                 {user.name.charAt(0).toUpperCase()}
               </span>
               <span className="text-sm font-medium text-gray-700 dark:text-gray-200 max-w-[100px] truncate">{user.name}</span>
@@ -128,7 +128,7 @@ export default function Navbar() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
             </button>
-            <button ref={hamburgerRef} onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2.5 text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-[12px] transition-all cursor-pointer" aria-label={mobileOpen ? 'Close menu' : 'Open menu'} aria-expanded={mobileOpen}>
+            <button ref={hamburgerRef} onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2.5 text-gray-400 dark:text-gray-500 hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-[12px] transition-all cursor-pointer" aria-label={mobileOpen ? 'Close menu' : 'Open menu'} aria-expanded={mobileOpen}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {mobileOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -154,7 +154,7 @@ export default function Navbar() {
               <Link key={l.to} to={l.to} onClick={() => setMobileOpen(false)}
                 className={`block px-3 py-2.5 rounded-[12px] text-sm font-medium transition-all ${
                   isActive(l.to)
-                    ? 'bg-[#6C4CF1]/10 text-[#6C4CF1]'
+                    ? 'bg-primary/10 text-primary'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                 }`}
               >
@@ -164,7 +164,7 @@ export default function Navbar() {
             <Link to="/profile" onClick={() => setMobileOpen(false)}
               className="flex items-center gap-2 px-3 py-2.5 rounded-[12px] text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all"
             >
-              <span className="w-6 h-6 rounded-[8px] bg-gradient-to-br from-[#6C4CF1] to-[#8B6FF7] text-white text-[10px] font-bold flex items-center justify-center">
+              <span className="w-6 h-6 rounded-[8px] bg-gradient-to-br from-primary to-[#8B6FF7] text-white text-[10px] font-bold flex items-center justify-center">
                 {user.name.charAt(0).toUpperCase()}
               </span>
               Profile

@@ -30,7 +30,7 @@ export default function InstallPrompt() {
         <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Install DevConnect</p>
         <p className="text-xs text-gray-500 dark:text-gray-400">Access the app from your home screen</p>
       </div>
-      <button onClick={handleInstall} className="bg-gradient-to-r from-[#6C4CF1] to-[#5538D6] text-white px-4 py-2 rounded-[12px] text-sm font-semibold cursor-pointer whitespace-nowrap">Install</button>
+      <button onClick={handleInstall} className="bg-gradient-to-r from-[primary] to-[#5538D6] text-white px-4 py-2 rounded-[12px] text-sm font-semibold cursor-pointer whitespace-nowrap">Install</button>
       <button onClick={() => setShow(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer" aria-label="Dismiss install prompt">&times;</button>
     </div>
   );

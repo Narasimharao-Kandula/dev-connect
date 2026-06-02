@@ -48,7 +48,8 @@ export default function Chats() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center gap-3 mb-6">
+        <Link to="/dashboard" className="text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] transition-colors text-sm">&larr; Back</Link>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Chats</h1>
         <button
           onClick={() => setShowNewChat(!showNewChat)}

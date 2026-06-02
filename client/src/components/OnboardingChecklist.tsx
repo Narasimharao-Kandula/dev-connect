@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiChevronDown, FiCheckCircle, FiCircle } from 'react-icons/fi';
@@ -70,9 +71,9 @@ export default function OnboardingChecklist() {
                   )}
                 </button>
                 {item.link ? (
-                  <a href={item.link} className={`text-sm transition-colors ${done ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-700 dark:text-gray-200 hover:text-[#6C4CF1]'}`}>
+                  <Link to={item.link} className={`text-sm transition-colors ${done ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-700 dark:text-gray-200 hover:text-[#6C4CF1]'}`}>
                     {item.label}
-                  </a>
+                  </Link>
                 ) : (
                   <span className={`text-sm ${done ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-700 dark:text-gray-200'}`}>
                     {item.label}

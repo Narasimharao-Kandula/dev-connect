@@ -36,3 +36,5 @@ server/uploads/*.jpeg
 
 # Test coverage
 coverage/
+.last-run.json
+test-results/

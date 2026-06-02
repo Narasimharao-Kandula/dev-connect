@@ -25,7 +25,7 @@ export function useSocket() {
       addNotification(notification);
       toast(notification.message, {
         description: 'New notification',
-        action: { label: 'View', onClick: () => window.location.href = '/notifications' },
+        action: { label: 'View', onClick: () => window.location.href = import.meta.env.BASE_URL + 'notifications' },
       });
     });
 

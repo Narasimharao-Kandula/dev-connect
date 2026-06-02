@@ -120,7 +120,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Toaster position="top-right" toastOptions={{ style: { borderRadius: '14px', padding: '12px 16px', border: '1px solid #e8e8ef', boxShadow: '0 8px 32px rgba(0,0,0,0.06)' }, className: 'dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100' }} />
       <ErrorModal />
       <ErrorBoundary>

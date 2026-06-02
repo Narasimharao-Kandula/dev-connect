@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/client';
 
 export default function Contact() {
@@ -38,6 +39,9 @@ export default function Contact() {
   return (
     <div className="py-16">
       <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-3 mb-8">
+          <Link to="/" className="text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] transition-colors text-sm">&larr; Back to Home</Link>
+        </div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 text-center">Contact Us</h1>
         <p className="text-center text-gray-500 dark:text-gray-400 mt-2">Have a question or feedback? We'd love to hear from you.</p>
         <form onSubmit={handleSubmit} className="mt-8 bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-8 space-y-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>

@@ -20,10 +20,10 @@ const Button = memo(function Button({
   const base = 'inline-flex items-center justify-center font-semibold transition-all duration-200 cursor-pointer select-none';
 
   const variants = {
-    primary: 'bg-gradient-to-r from-[#6C4CF1] to-[#5538D6] text-white hover:shadow-lg hover:shadow-[#6C4CF1]/25 active:shadow-md active:shadow-[#6C4CF1]/20',
-    secondary: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 active:bg-gray-300 dark:active:bg-gray-600',
+    primary: 'bg-gradient-to-r from-primary to-[#5538D6] text-white hover:shadow-lg hover:shadow-primary/25 active:shadow-md active:shadow-primary/20',
+    secondary: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 active:bg-gray-300 dark:active:bg-gray-600',
     ghost: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700',
-    outline: 'border-2 border-[#6C4CF1]/20 text-[#6C4CF1] hover:bg-[#6C4CF1]/5 hover:border-[#6C4CF1]/30 active:bg-[#6C4CF1]/10',
+    outline: 'border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/30 active:bg-primary/10',
     danger: 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-lg hover:shadow-red-500/20',
   };
 

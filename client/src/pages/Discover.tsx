@@ -84,7 +84,8 @@ export default function Discover() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <Link to="/dashboard" className="text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] transition-colors text-sm">&larr; Back</Link>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Discover Developers</h1>
       </div>
 

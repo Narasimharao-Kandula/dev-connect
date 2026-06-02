@@ -273,7 +273,7 @@ export default function AuthPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     {['Google', 'GitHub'].map((p) => (
-                      <a key={p} href={`/api/auth/${p.toLowerCase()}`}
+                      <a key={p} href={`${import.meta.env.VITE_API_URL || ''}/api/auth/${p.toLowerCase()}`}
                         className="flex items-center justify-center gap-2 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-[14px] text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:border-gray-300 dark:hover:border-gray-600 transition-all cursor-pointer"
                       >
                         {p === 'Google' ? (
