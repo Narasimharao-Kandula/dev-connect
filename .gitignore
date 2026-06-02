@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Uploads (dev artifacts)
+server/uploads/*.png
+server/uploads/*.jpg
+server/uploads/*.jpeg
+
+# Uploads (dev artifacts only; keep .gitkeep or whitelist if needed)
+server/uploads/*.png
+server/uploads/*.jpg
+server/uploads/*.jpeg
+
+# Test coverage
+coverage/
