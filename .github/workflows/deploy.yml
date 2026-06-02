@@ -46,6 +46,9 @@ jobs:
       - name: Build with custom base
         run: npm run build -- --base=${{ steps.configure-pages.outputs.base_path || '/' }}
 
+      - name: Copy 404.html for SPA routing
+        run: cp dist/index.html dist/404.html
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
