@@ -71,8 +71,8 @@ export default function OnboardingWizard() {
           {step === 2 && showInput('Country', 'country', 'text', 'e.g. India')}
           {step === 3 && (
             <>
-              {showInput('GitHub URL', 'githubUrl', 'url', 'https://github.com/yourhandle')}
-              {showInput('Portfolio URL', 'portfolio', 'url', 'https://yoursite.dev')}
+              {showInput('GitHub URL', 'githubUrl', 'url', 'https://github.com/yourusername')}
+              {showInput('Portfolio URL', 'portfolio', 'url', 'https://yourportfolio.dev')}
             </>
           )}
           {step === 4 && (
