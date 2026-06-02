@@ -97,4 +97,4 @@ jobs:
       - name: Run e2e tests
         run: npm run test:e2e
         env:
-          VITE_API_URL: https://dev-connect-api.onrender.com
+          VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://dev-connect-api.onrender.com' }}
