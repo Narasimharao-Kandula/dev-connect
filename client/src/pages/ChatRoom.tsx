@@ -15,20 +15,28 @@ export default function ChatRoom() {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const load = async () => {
-      const [convRes, msgRes] = await Promise.all([
-        api.get('/conversations').then((r) => r.data.find((c: Conversation) => c.id === id)),
-        api.get(`/conversations/${id}/messages`),
-      ]);
-      setConv(convRes);
-      setMessages(msgRes.data);
+    const loadConversation = async () => {
+      try {
+        const { data: allConvs } = await api.get('/conversations');
+        const found = allConvs.find((c: Conversation) => c.id === id);
+        setConv(found || null);
+      } catch {}
+    };
+    const loadMessages = async () => {
+      try {
+        const { data } = await api.get(`/conversations/${id}/messages`);
+        setMessages(data.messages || data);
+        setNextCursor(data.nextCursor || null);
+      } catch {}
       setLoading(false);
     };
-    load();
+    Promise.all([loadConversation(), loadMessages()]);
   }, [id]);
 
   useEffect(() => {
@@ -40,6 +48,18 @@ export default function ChatRoom() {
   }, [id]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  const loadMore = async () => {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const { data } = await api.get(`/conversations/${id}/messages?cursor=${nextCursor}`);
+      const older = (data.messages || data).filter((m: Message) => !messages.some((e) => e.id === m.id));
+      setMessages((prev) => [...older, ...prev]);
+      setNextCursor(data.nextCursor || null);
+    } catch {}
+    setLoadingMore(false);
+  };
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +87,7 @@ export default function ChatRoom() {
   if (loading) return <LoadingPage />;
   if (!conv) return <div className="text-center py-12 text-gray-500 dark:text-gray-400">We couldn't find this conversation.</div>;
 
-  const other = conv.participants.find((p) => p.userId !== conv.participants[0]?.userId);
+  const other = conv.participants.find((p) => p.userId !== currentUser?.id);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -77,6 +97,13 @@ export default function ChatRoom() {
           <span className="font-medium text-gray-900 dark:text-gray-100">{other?.user?.name || 'Chat Room'}</span>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {nextCursor && (
+            <div className="text-center">
+              <button onClick={loadMore} disabled={loadingMore} className="text-xs text-[#6C4CF1] hover:text-[#5538D6] font-medium transition cursor-pointer">
+                {loadingMore ? 'Loading...' : 'Load older messages'}
+              </button>
+            </div>
+          )}
           {messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.senderId === currentUser?.id ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] sm:max-w-[70%] rounded-[20px] px-4 py-2 ${

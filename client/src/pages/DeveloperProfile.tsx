@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api/client';
 import { useAuthStore } from '../store/authStore';
 import { LoadingPage } from '../components/ui/LottieLoader';
@@ -10,6 +10,7 @@ import type { User, ReviewResponse } from '../types';
 export default function DeveloperProfile() {
   const { id } = useParams<{ id: string }>();
   const currentUser = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
   const [developer, setDeveloper] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -43,6 +44,13 @@ export default function DeveloperProfile() {
     setFollowing(data.following);
   };
 
+  const startConversation = async () => {
+    try {
+      const { data } = await api.post('/conversations', { userId: id });
+      navigate(`/chat/${data.id}`);
+    } catch {}
+  };
+
   const handleSubmitReview = async () => {
     setSubmittingReview(true);
     try {
@@ -73,6 +81,7 @@ export default function DeveloperProfile() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      <Link to="/discover" className="inline-flex items-center gap-1 text-sm text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] transition-colors">&larr; Back to Discover</Link>
       <div className="bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
         <div className="flex items-start justify-between">
           <div>
@@ -87,6 +96,12 @@ export default function DeveloperProfile() {
               <>
                 <button onClick={toggleFollow} className={`px-4 py-2 rounded-[12px] text-sm font-semibold transition ${following ? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' : 'bg-gradient-to-r from-[#6C4CF1] to-[#5538D6] text-white shadow-lg shadow-[#6C4CF1]/20'}`}>
                   {following ? 'Following' : 'Follow'}
+                </button>
+                <button
+                  onClick={startConversation}
+                  className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-[12px] font-semibold text-sm transition hover:border-[#6C4CF1]/30"
+                >
+                  Message
                 </button>
                 <button
                   onClick={() => setShowRequestModal(true)}

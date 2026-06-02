@@ -66,7 +66,7 @@ export default function SearchBar() {
         // Navigate based on selected item
         let idx = 0;
         if (selectedIdx < results.users.length) {
-          navigate(`/developers/${results.users[selectedIdx].id}`);
+          navigate(`/users/${results.users[selectedIdx].id}`);
         } else if (selectedIdx < results.users.length + results.projects.length) {
           idx = selectedIdx - results.users.length;
           navigate(`/projects/${results.projects[idx].id}`);
@@ -83,7 +83,7 @@ export default function SearchBar() {
   };
 
   const sections: { label: string; items: any[]; key: string; icon: string; onClick: (item: any) => void }[] = [
-    { label: 'Users', items: results.users, key: 'users', icon: '👤', onClick: (u) => { navigate(`/developers/${u.id}`); setOpen(false); } },
+      { label: 'Users', items: results.users, key: 'users', icon: '👤', onClick: (u) => { navigate(`/users/${u.id}`); setOpen(false); } },
     { label: 'Projects', items: results.projects, key: 'projects', icon: '📁', onClick: (p) => { navigate(`/projects/${p.id}`); setOpen(false); } },
     { label: 'Skills', items: results.skills, key: 'skills', icon: '🏷️', onClick: (s) => { setQuery(s.name); setOpen(false); } },
   ];

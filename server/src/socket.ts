@@ -34,13 +34,14 @@ export function setupSocket(httpServer: HTTPServer) {
     const userId = (socket as any).userId;
     socket.join(`user:${userId}`);
 
-    socket.on("chat:send", async (data: { conversationId: string; content: string }) => {
+    socket.on("chat:send", async (data: { conversationId: string; content: string; attachmentUrl?: string }) => {
       try {
         const message = await prisma.message.create({
           data: {
             conversationId: data.conversationId,
             senderId: userId,
             content: data.content,
+            attachmentUrl: data.attachmentUrl || null,
           },
           include: { sender: { select: { id: true, name: true, avatar: true } } },
         });

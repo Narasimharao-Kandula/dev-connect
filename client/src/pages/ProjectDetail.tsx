@@ -54,6 +54,7 @@ export default function ProjectDetail() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      <Link to="/projects" className="inline-flex items-center gap-1 text-sm text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] transition-colors">&larr; Back to Projects</Link>
       <div className="bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
         <div className="flex justify-between items-start">
           <div>

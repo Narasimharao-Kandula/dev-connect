@@ -55,7 +55,7 @@ export class ChatService {
     return conversation;
   }
 
-  async getMessages(conversationId: string, userId: string) {
+  async getMessages(conversationId: string, userId: string, cursor?: string, limit = 50) {
     const conv = await prisma.conversation.findFirst({
       where: {
         id: conversationId,
@@ -64,11 +64,23 @@ export class ChatService {
     });
     if (!conv) throw new AppError(403, "Not a participant");
 
-    return prisma.message.findMany({
-      where: { conversationId },
+    const messages = await prisma.message.findMany({
+      where: {
+        conversationId,
+        ...(cursor ? { createdAt: { lt: new Date(cursor) } } : {}),
+      },
       include: { sender: { select: { id: true, name: true, avatar: true } } },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" },
+      take: limit + 1,
     });
+
+    const hasMore = messages.length > limit;
+    const result = hasMore ? messages.slice(0, limit) : messages;
+
+    return {
+      messages: result.reverse(),
+      nextCursor: hasMore ? result[result.length - 1]?.createdAt.toISOString() : null,
+    };
   }
 
   async sendMessage(conversationId: string, senderId: string, content: string) {

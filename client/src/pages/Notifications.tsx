@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNotificationStore } from '../store/notificationStore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { LoadingPage } from '../components/ui/LottieLoader';
 import Illustration from '../components/ui/Illustration';
 import { formatRelativeTime } from '../utils/helpers';
@@ -37,7 +37,10 @@ export default function Notifications() {
   return (
     <div className="max-w-2xl mx-auto space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Notifications</h1>
+        <div className="flex items-center gap-3">
+          <Link to="/dashboard" className="text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] transition-colors text-sm">&larr; Back</Link>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Notifications</h1>
+        </div>
         {notifications.some((n) => !n.read) && (
           <button onClick={markAllRead} className="text-[#6C4CF1] hover:text-[#5538D6] text-sm">
             Mark All Read

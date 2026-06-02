@@ -50,8 +50,10 @@ export const getMessages = async (
 ) => {
   try {
     const id = req.params.id as string;
-    const messages = await service.getMessages(id, req.user!.userId);
-    res.json(messages);
+    const cursor = req.query.cursor as string | undefined;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 50;
+    const result = await service.getMessages(id, req.user!.userId, cursor, limit);
+    res.json(result);
   } catch (err) {
     next(err);
   }
