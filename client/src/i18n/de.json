@@ -1,0 +1,71 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "discover": "Entdecken",
+    "projects": "Projekte",
+    "chats": "Chats",
+    "notifications": "Benachrichtigungen",
+    "settings": "Einstellungen",
+    "profile": "Profil",
+    "admin": "Admin",
+    "signOut": "Abmelden",
+    "signIn": "Anmelden",
+    "createAccount": "Konto erstellen"
+  },
+  "common": {
+    "loading": "Lädt...",
+    "error": "Etwas ist schiefgelaufen",
+    "retry": "Erneut versuchen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "confirm": "Bestätigen",
+    "search": "Suchen",
+    "noResults": "Keine Ergebnisse",
+    "back": "Zurück",
+    "close": "Schließen",
+    "submit": "Absenden",
+    "upload": "Hochladen"
+  },
+  "home": {
+    "heroTitle": "Wo Entwickler gemeinsam bauen",
+    "heroSubtitle": "Vernetze dich mit Entwicklern, arbeite an Projekten und baue dein Traumteam.",
+    "getStarted": "Loslegen",
+    "learnMore": "Mehr erfahren"
+  },
+  "discover": {
+    "title": "Entwickler entdecken",
+    "searchPlaceholder": "Suche nach Name, Fähigkeiten...",
+    "skills": "Fähigkeiten",
+    "availability": "Verfügbarkeit",
+    "anyAvailability": "Jede Verfügbarkeit",
+    "available": "Verfügbar",
+    "busy": "Beschäftigt",
+    "collabScore": "Kollaborationswert",
+    "filters": "Filter"
+  },
+  "chat": {
+    "title": "Nachrichten",
+    "newChat": "Neuer Chat",
+    "typeMessage": "Schreibe eine Nachricht...",
+    "send": "Senden",
+    "typing": "tippt...",
+    "noMessages": "Noch keine Nachrichten.",
+    "noConversations": "Keine Unterhaltungen."
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "markAllRead": "Alle als gelesen",
+    "noNotifications": "Keine Benachrichtigungen.",
+    "dismiss": "Verwerfen"
+  },
+  "auth": {
+    "signIn": "Anmelden",
+    "signUp": "Registrieren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "forgotPassword": "Passwort vergessen?",
+    "noAccount": "Kein Konto?",
+    "hasAccount": "Bereits ein Konto?"
+  }
+}

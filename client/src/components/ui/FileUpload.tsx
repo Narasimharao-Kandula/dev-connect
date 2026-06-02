@@ -22,6 +22,8 @@ export default function FileUpload({ files, onFilesChange, accept, maxSize = 5 *
     onFilesChange(files.filter((_, i) => i !== index));
   };
 
+  const getPreview = (file: File) => file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
+
   return (
     <div className="space-y-2">
       <div
@@ -47,16 +49,23 @@ export default function FileUpload({ files, onFilesChange, accept, maxSize = 5 *
       </div>
       {files.length > 0 && (
         <div className="space-y-1.5">
-          {files.map((file, i) => (
-            <div key={`${file.name}-${i}`} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50 rounded-[12px] px-3 py-2 border border-gray-100 dark:border-gray-800">
-              <FiFile size={16} className="text-gray-400 shrink-0" />
-              <span className="text-sm text-gray-700 dark:text-gray-200 flex-1 truncate">{file.name}</span>
-              <span className="text-xs text-gray-400 shrink-0">{(file.size / 1024).toFixed(0)}KB</span>
-              <button type="button" onClick={() => removeFile(i)} className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer" aria-label="Remove file">
-                <FiX size={16} />
-              </button>
-            </div>
-          ))}
+          {files.map((file, i) => {
+            const previewUrl = getPreview(file);
+            return (
+              <div key={`${file.name}-${i}`} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50 rounded-[12px] px-3 py-2 border border-gray-100 dark:border-gray-800">
+                {previewUrl ? (
+                  <img src={previewUrl} alt="" className="w-9 h-9 rounded-[8px] object-cover shrink-0" />
+                ) : (
+                  <FiFile size={16} className="text-gray-400 shrink-0" />
+                )}
+                <span className="text-sm text-gray-700 dark:text-gray-200 flex-1 truncate">{file.name}</span>
+                <span className="text-xs text-gray-400 shrink-0">{(file.size / 1024).toFixed(0)}KB</span>
+                <button type="button" onClick={() => removeFile(i)} className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer" aria-label="Remove file">
+                  <FiX size={16} />
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useNotificationStore } from '../../store/notificationStore';
 import SearchBar from '../ui/SearchBar';
 import ThemeToggle from '../ui/ThemeToggle';
 import CommandPalette from '../ui/CommandPalette';
+import LanguageSwitcher from '../LanguageSwitcher';
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -13,6 +14,23 @@ export default function Navbar() {
   const unreadCount = useNotificationStore((s) => s.unreadCount);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const menuRef = useRef<HTMLDivElement>(null);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileOpen(false);
+    };
+    document.addEventListener('keydown', handleEscape);
+    menuRef.current?.focus();
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    if (!mobileOpen) hamburgerRef.current?.focus();
+  }, [mobileOpen]);
 
   const handleLogout = () => {
     logout();
@@ -73,6 +91,9 @@ export default function Navbar() {
               </svg>
               <span className="hidden lg:inline">Cmd+K</span>
             </button>
+            <div className="hidden md:block">
+              <LanguageSwitcher />
+            </div>
             <ThemeToggle />
             <Link
               to="/notifications"
@@ -107,7 +128,7 @@ export default function Navbar() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
             </button>
-            <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2.5 text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-[12px] transition-all cursor-pointer" aria-label={mobileOpen ? 'Close menu' : 'Open menu'} aria-expanded={mobileOpen}>
+            <button ref={hamburgerRef} onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2.5 text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-[12px] transition-all cursor-pointer" aria-label={mobileOpen ? 'Close menu' : 'Open menu'} aria-expanded={mobileOpen}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {mobileOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -120,30 +141,36 @@ export default function Navbar() {
         </div>
       </div>
       {mobileOpen && (
-        <div className="md:hidden border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 pb-4 pt-2 space-y-1">
-          <div className="mb-3">
-            <SearchBar />
-          </div>
-          {navLinks.map((l) => (
-            <Link key={l.to} to={l.to} onClick={() => setMobileOpen(false)}
-              className={`block px-3 py-2.5 rounded-[12px] text-sm font-medium transition-all ${
-                isActive(l.to)
-                  ? 'bg-[#6C4CF1]/10 text-[#6C4CF1]'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
-              }`}
+        <>
+          <div className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40 md:hidden" onClick={() => setMobileOpen(false)} />
+          <div ref={menuRef} tabIndex={-1} className="fixed top-16 left-0 right-0 bottom-0 z-50 md:hidden bg-white dark:bg-gray-950 px-4 pt-2 pb-8 overflow-y-auto animate-fade-in">
+            <div className="mb-3">
+              <SearchBar />
+            </div>
+            <div className="px-3 py-2">
+              <LanguageSwitcher />
+            </div>
+            {navLinks.map((l) => (
+              <Link key={l.to} to={l.to} onClick={() => setMobileOpen(false)}
+                className={`block px-3 py-2.5 rounded-[12px] text-sm font-medium transition-all ${
+                  isActive(l.to)
+                    ? 'bg-[#6C4CF1]/10 text-[#6C4CF1]'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                }`}
+              >
+                {l.label}
+              </Link>
+            ))}
+            <Link to="/profile" onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2 px-3 py-2.5 rounded-[12px] text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all"
             >
-              {l.label}
+              <span className="w-6 h-6 rounded-[8px] bg-gradient-to-br from-[#6C4CF1] to-[#8B6FF7] text-white text-[10px] font-bold flex items-center justify-center">
+                {user.name.charAt(0).toUpperCase()}
+              </span>
+              Profile
             </Link>
-          ))}
-          <Link to="/profile" onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-2 px-3 py-2.5 rounded-[12px] text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all"
-          >
-            <span className="w-6 h-6 rounded-[8px] bg-gradient-to-br from-[#6C4CF1] to-[#8B6FF7] text-white text-[10px] font-bold flex items-center justify-center">
-              {user.name.charAt(0).toUpperCase()}
-            </span>
-            Profile
-          </Link>
-        </div>
+          </div>
+        </>
       )}
       <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
     </nav>

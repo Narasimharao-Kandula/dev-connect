@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../api/client';
 import { useAuthStore } from '../store/authStore';
 import { LoadingPage } from '../components/ui/LottieLoader';
-import { getStatusColor, formatDate } from '../utils/helpers';
+import { getStatusColor, formatDate, formatRelativeTime } from '../utils/helpers';
 import KanbanBoard from '../components/forms/KanbanBoard';
 import type { Project } from '../types';
 
@@ -64,7 +64,7 @@ export default function ProjectDetail() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={toggleBookmark} className={`text-xl ${bookmarked ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600 hover:text-gray-400 dark:hover:text-gray-500'}`} title={bookmarked ? 'Remove bookmark' : 'Bookmark'}>
+            <button onClick={toggleBookmark} className={`text-xl ${bookmarked ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600 hover:text-gray-400 dark:hover:text-gray-500'}`} aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark'}>
               {bookmarked ? '★' : '☆'}
             </button>
             <span className={`text-xs px-3 py-1 rounded-[8px] font-medium ${getStatusColor(project.status)}`}>{project.status}</span>
@@ -174,6 +174,8 @@ export default function ProjectDetail() {
         </div>
       )}
 
+      <ActivityTimeline projectId={id!} />
+
       <div className="bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Tasks ({tasks.length})</h2>
         <KanbanBoard
@@ -185,6 +187,40 @@ export default function ProjectDetail() {
             setTasks(data);
           }}
         />
+      </div>
+    </div>
+  );
+}
+
+function ActivityTimeline({ projectId }: { projectId: string }) {
+  const [activities, setActivities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get(`/projects/${projectId}/activities`).then(({ data }) => setActivities(data)).catch(() => {}).finally(() => setLoading(false));
+  }, [projectId]);
+
+  if (loading || activities.length === 0) return null;
+
+  const typeIcons: Record<string, string> = {
+    task_created: '📋', task_completed: '✅', team_joined: '👥', project_created: '🚀', status_change: '🔄',
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Activity Log</h2>
+      <div className="space-y-3">
+        {activities.map((a) => (
+          <div key={a.id} className="flex items-start gap-3">
+            <span className="text-base mt-0.5">{typeIcons[a.type] || '📌'}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-700 dark:text-gray-200">
+                <span className="font-medium">{a.user.name}</span> {a.message}
+              </p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{formatRelativeTime(a.createdAt)}</p>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

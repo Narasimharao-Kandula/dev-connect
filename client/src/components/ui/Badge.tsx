@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 interface BadgeProps {
   children: React.ReactNode;
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
@@ -19,10 +21,12 @@ const sizes = {
   md: 'text-xs px-2.5 py-1 rounded-[10px]',
 };
 
-export default function Badge({ children, variant = 'default', size = 'md', className = '' }: BadgeProps) {
+const Badge = memo(function Badge({ children, variant = 'default', size = 'md', className = '' }: BadgeProps) {
   return (
     <span className={`inline-flex items-center font-medium ${variants[variant]} ${sizes[size]} ${className}`}>
       {children}
     </span>
   );
-}
+});
+
+export default Badge;

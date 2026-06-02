@@ -1,0 +1,83 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "discover": "Discover",
+    "projects": "Projects",
+    "chats": "Chats",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "profile": "Profile",
+    "admin": "Admin",
+    "signOut": "Sign Out",
+    "signIn": "Sign In",
+    "createAccount": "Create Account"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try Again",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "search": "Search",
+    "noResults": "No results found",
+    "back": "Back",
+    "viewAll": "View All",
+    "seeMore": "See More",
+    "close": "Close",
+    "submit": "Submit",
+    "upload": "Upload"
+  },
+  "home": {
+    "heroTitle": "Where Developers Build Together",
+    "heroSubtitle": "Connect with developers, collaborate on projects, and build your dream team.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More"
+  },
+  "discover": {
+    "title": "Discover Developers",
+    "searchPlaceholder": "Search by name, skills, or bio...",
+    "skills": "Skills",
+    "availability": "Availability",
+    "anyAvailability": "Any Availability",
+    "available": "Available",
+    "busy": "Busy",
+    "collabScore": "Collaboration Score",
+    "minScore": "Minimum Score",
+    "filters": "Filters"
+  },
+  "chat": {
+    "title": "Messages",
+    "newChat": "New Chat",
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "typing": "typing...",
+    "noMessages": "No messages yet. Start a conversation!",
+    "noConversations": "No conversations yet."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark All Read",
+    "noNotifications": "No notifications yet.",
+    "dismiss": "Dismiss"
+  },
+  "profile": {
+    "editProfile": "Edit Profile",
+    "memberSince": "Member since",
+    "skills": "Skills",
+    "bio": "Bio",
+    "noBio": "No bio yet.",
+    "projects": "Projects",
+    "noProjects": "No projects yet."
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  }
+}

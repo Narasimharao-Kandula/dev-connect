@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api/client';
 import { useAuthStore } from '../store/authStore';
+import { useOnlineStore } from '../store/onlineStore';
 import { LoadingPage } from '../components/ui/LottieLoader';
 import SendRequestModal from '../components/forms/SendRequestModal';
 import { getAvailabilityColor, formatRelativeTime } from '../utils/helpers';
@@ -10,6 +11,7 @@ import type { User, ReviewResponse } from '../types';
 export default function DeveloperProfile() {
   const { id } = useParams<{ id: string }>();
   const currentUser = useAuthStore((s) => s.user);
+  const onlineUsers = useOnlineStore((s) => s.onlineUsers);
   const navigate = useNavigate();
   const [developer, setDeveloper] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,7 +87,10 @@ export default function DeveloperProfile() {
       <div className="bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{developer.name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{developer.name}</h1>
+              <span className={`w-2.5 h-2.5 rounded-full ${onlineUsers.has(developer.id) ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+            </div>
             <p className="text-gray-500 dark:text-gray-400 mt-1">{developer.country || 'Location not set'} {developer.timezone ? `(${developer.timezone})` : ''}</p>
             <p className="mt-1">
               Status: <span className={getAvailabilityColor(developer.availability)}>{developer.availability}</span>
@@ -112,6 +117,14 @@ export default function DeveloperProfile() {
               </>
             )}
           </div>
+          {currentUser && currentUser.id !== developer.id && (
+            <div className="flex flex-col gap-1 mt-2">
+              <button onClick={async () => { if (confirm('Block this user?')) { await api.post(`/moderation/users/${developer.id}/block`).catch(() => {}).then(() => alert('User blocked')); } }}
+                className="text-xs text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors text-right">Block</button>
+              <button onClick={async () => { const reason = prompt('Reason for report:'); if (reason) { await api.post(`/moderation/users/${developer.id}/report`, { reason }).catch(() => {}).then(() => alert('User reported')); } }}
+                className="text-xs text-gray-400 dark:text-gray-500 hover:text-orange-500 transition-colors text-right">Report</button>
+            </div>
+          )}
         </div>
       </div>
 

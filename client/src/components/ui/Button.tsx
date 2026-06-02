@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 
 interface ButtonProps {
@@ -12,7 +13,7 @@ interface ButtonProps {
   fullWidth?: boolean;
 }
 
-export default function Button({
+const Button = memo(function Button({
   children, onClick, type = 'button', variant = 'primary', size = 'md',
   disabled, loading, className = '', fullWidth
 }: ButtonProps) {
@@ -50,4 +51,6 @@ export default function Button({
       {children}
     </motion.button>
   );
-}
+});
+
+export default Button;

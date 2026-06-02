@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 interface GlassCardProps {
   children: React.ReactNode;
   className?: string;
@@ -6,7 +8,7 @@ interface GlassCardProps {
   onClick?: () => void;
 }
 
-export default function GlassCard({ children, className = '', hover = false, padding = 'md', onClick }: GlassCardProps) {
+const GlassCard = memo(function GlassCard({ children, className = '', hover = false, padding = 'md', onClick }: GlassCardProps) {
   const paddings = { sm: 'p-4', md: 'p-5', lg: 'p-7' };
   return (
     <div
@@ -17,4 +19,6 @@ export default function GlassCard({ children, className = '', hover = false, pad
       {children}
     </div>
   );
-}
+});
+
+export default GlassCard;

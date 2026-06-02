@@ -1,0 +1,71 @@
+{
+  "nav": {
+    "dashboard": "Panel",
+    "discover": "Descubrir",
+    "projects": "Proyectos",
+    "chats": "Chats",
+    "notifications": "Notificaciones",
+    "settings": "Ajustes",
+    "profile": "Perfil",
+    "admin": "Admin",
+    "signOut": "Cerrar sesión",
+    "signIn": "Iniciar sesión",
+    "createAccount": "Crear cuenta"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Algo salió mal",
+    "retry": "Intentar de nuevo",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar",
+    "search": "Buscar",
+    "noResults": "Sin resultados",
+    "back": "Atrás",
+    "close": "Cerrar",
+    "submit": "Enviar",
+    "upload": "Subir"
+  },
+  "home": {
+    "heroTitle": "Donde los desarrolladores construyen juntos",
+    "heroSubtitle": "Conéctate con desarrolladores, colabora en proyectos y construye tu equipo ideal.",
+    "getStarted": "Comenzar",
+    "learnMore": "Más información"
+  },
+  "discover": {
+    "title": "Descubrir Desarrolladores",
+    "searchPlaceholder": "Buscar por nombre, habilidades...",
+    "skills": "Habilidades",
+    "availability": "Disponibilidad",
+    "anyAvailability": "Cualquier disponibilidad",
+    "available": "Disponible",
+    "busy": "Ocupado",
+    "collabScore": "Puntuación de colaboración",
+    "filters": "Filtros"
+  },
+  "chat": {
+    "title": "Mensajes",
+    "newChat": "Nuevo chat",
+    "typeMessage": "Escribe un mensaje...",
+    "send": "Enviar",
+    "typing": "escribiendo...",
+    "noMessages": "No hay mensajes aún.",
+    "noConversations": "No hay conversaciones."
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todo leído",
+    "noNotifications": "Sin notificaciones.",
+    "dismiss": "Descartar"
+  },
+  "auth": {
+    "signIn": "Iniciar sesión",
+    "signUp": "Registrarse",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?"
+  }
+}

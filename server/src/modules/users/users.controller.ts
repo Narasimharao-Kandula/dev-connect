@@ -12,7 +12,7 @@ export const getUsers = async (
 ) => {
   try {
     const q = req.query as Record<string, string>;
-    const skill = q.skill, country = q.country, experience = q.experience, remoteOnly = q.remoteOnly, openToCollab = q.openToCollab, search = q.search;
+    const skill = q.skill, country = q.country, experience = q.experience, remoteOnly = q.remoteOnly, openToCollab = q.openToCollab, search = q.search, availability = q.availability, minScore = q.minScore;
     const users = await service.getUsers({
       skill,
       country,
@@ -20,6 +20,9 @@ export const getUsers = async (
       remoteOnly,
       openToCollab,
       search,
+      availability,
+      minScore,
+      currentUserId: req.user!.userId,
     });
     res.json(users);
   } catch (err) {

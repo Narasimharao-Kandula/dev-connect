@@ -38,10 +38,11 @@ describe("Phase 7 — Real-time Notifications", () => {
       .get("/api/notifications")
       .set("Authorization", `Bearer ${myToken}`);
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    if (res.body.length > 0) {
+    const items = res.body.notifications || res.body;
+    expect(Array.isArray(items)).toBe(true);
+    if (items.length > 0) {
       // Some parallel test may have created notifications — that's ok
-      expect(res.body[0]).toHaveProperty("id");
+      expect(items[0]).toHaveProperty("id");
     }
   });
 
@@ -61,7 +62,8 @@ describe("Phase 7 — Real-time Notifications", () => {
       .get("/api/notifications")
       .set("Authorization", `Bearer ${rahulLogin.body.token}`);
     expect(rahulRes.status).toBe(200);
-    expect(rahulRes.body.length).toBeGreaterThanOrEqual(1);
+    const items = rahulRes.body.notifications || rahulRes.body;
+    expect(items.length).toBeGreaterThanOrEqual(1);
   });
 
   it("PATCH /api/notifications/:id/read marks notification read", async () => {
@@ -70,8 +72,9 @@ describe("Phase 7 — Real-time Notifications", () => {
     const rahulNotifs = await request(app)
       .get("/api/notifications")
       .set("Authorization", `Bearer ${rahulLogin.body.token}`);
-    if (!rahulNotifs.body.length) return;
-    const notifId = rahulNotifs.body[0].id;
+    const rahulItems = rahulNotifs.body.notifications || rahulNotifs.body;
+    if (!rahulItems.length) return;
+    const notifId = rahulItems[0].id;
     const res = await request(app)
       .patch(`/api/notifications/${notifId}/read`)
       .set("Authorization", `Bearer ${rahulLogin.body.token}`);

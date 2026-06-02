@@ -5,10 +5,15 @@ import { env } from "./config/env";
 import { prisma } from "./lib/prisma";
 
 let io: Server;
+const onlineUsers = new Set<string>();
 
 export function getIO(): Server {
   if (!io) throw new Error("Socket.IO not initialized");
   return io;
+}
+
+export function isUserOnline(userId: string): boolean {
+  return onlineUsers.has(userId);
 }
 
 export function setupSocket(httpServer: HTTPServer) {
@@ -32,7 +37,20 @@ export function setupSocket(httpServer: HTTPServer) {
 
   io.on("connection", (socket) => {
     const userId = (socket as any).userId;
+    const wasOffline = !onlineUsers.has(userId);
+    onlineUsers.add(userId);
     socket.join(`user:${userId}`);
+    if (wasOffline) {
+      io.emit("user:online", { userId });
+    }
+
+    socket.on("chat:join", (data: { conversationId: string }) => {
+      socket.join(`conversation:${data.conversationId}`);
+    });
+
+    socket.on("chat:leave", (data: { conversationId: string }) => {
+      socket.leave(`conversation:${data.conversationId}`);
+    });
 
     socket.on("chat:send", async (data: { conversationId: string; content: string; attachmentUrl?: string }) => {
       try {
@@ -66,11 +84,37 @@ export function setupSocket(httpServer: HTTPServer) {
       }
     });
 
-    socket.on("chat:typing", (data: { conversationId: string; userId: string }) => {
+    socket.on("chat:typing", (data: { conversationId: string }) => {
       socket.to(`conversation:${data.conversationId}`).emit("chat:typing", {
-        userId: data.userId,
+        userId,
         conversationId: data.conversationId,
       });
+    });
+
+    socket.on("chat:stop-typing", (data: { conversationId: string }) => {
+      socket.to(`conversation:${data.conversationId}`).emit("chat:stop-typing", {
+        userId,
+        conversationId: data.conversationId,
+      });
+    });
+
+    socket.on("messages:read", async (data: { conversationId: string }) => {
+      await prisma.message.updateMany({
+        where: { conversationId: data.conversationId, senderId: { not: userId }, read: false },
+        data: { read: true },
+      });
+      socket.to(`conversation:${data.conversationId}`).emit("messages:read", {
+        conversationId: data.conversationId,
+        userId,
+      });
+    });
+
+    socket.on("team:join", (data: { teamId: string }) => {
+      socket.join(`team:${data.teamId}`);
+    });
+
+    socket.on("team:leave", (data: { teamId: string }) => {
+      socket.leave(`team:${data.teamId}`);
     });
 
     socket.on("team:send", async (data: { teamId: string; content: string }) => {
@@ -111,6 +155,8 @@ export function setupSocket(httpServer: HTTPServer) {
 
     socket.on("disconnect", () => {
       socket.leave(`user:${userId}`);
+      onlineUsers.delete(userId);
+      io.emit("user:offline", { userId });
     });
   });
 

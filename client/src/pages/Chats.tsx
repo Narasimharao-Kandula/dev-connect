@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
+import { useAuthStore } from '../store/authStore';
+import { useOnlineStore } from '../store/onlineStore';
 import { LoadingPage } from '../components/ui/LottieLoader';
 import Illustration from '../components/ui/Illustration';
 import { formatRelativeTime } from '../utils/helpers';
 import type { Conversation } from '../types';
 
 export default function Chats() {
+  const currentUser = useAuthStore((s) => s.user);
+  const onlineUsers = useOnlineStore((s) => s.onlineUsers);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewChat, setShowNewChat] = useState(false);
@@ -98,16 +102,20 @@ export default function Chats() {
       ) : (
         <div className="space-y-2">
           {conversations.map((conv) => {
-            const other = conv.participants.find((p) => p.userId !== conv.participants[0]?.userId) || conv.participants[0];
+            const other = conv.participants.find((p) => p.userId !== currentUser?.id) || conv.participants[0];
+            const otherOnline = other ? onlineUsers.has(other.userId) : false;
             const lastMsg = conv.messages[0];
             return (
               <Link key={conv.id} to={`/chat/${conv.id}`} className="block bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-4 hover:border-gray-200 dark:hover:border-gray-600 transition" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100">{other?.user?.name || 'Unknown User'}</h3>
-                    {lastMsg && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">{lastMsg.content}</p>
-                    )}
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${otherOnline ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+                    <div>
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100">{other?.user?.name || 'Unknown User'}</h3>
+                      {lastMsg && (
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">{lastMsg.content}</p>
+                      )}
+                    </div>
                   </div>
                   {lastMsg && (
                     <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">{formatRelativeTime(lastMsg.createdAt)}</span>

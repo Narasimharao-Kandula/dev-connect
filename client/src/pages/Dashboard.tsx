@@ -8,6 +8,8 @@ import { LoadingPage } from '../components/ui/LottieLoader';
 import Illustration from '../components/ui/Illustration';
 import StatCard from '../components/ui/StatCard';
 import Badge from '../components/ui/Badge';
+import OnboardingChecklist from '../components/OnboardingChecklist';
+import OnboardingTour, { useOnboarding } from '../components/OnboardingTour';
 import { getAvailabilityColor, getStatusColor, formatRelativeTime } from '../utils/helpers';
 import type { Project, CollaborationRequest } from '../types';
 
@@ -18,6 +20,8 @@ export default function Dashboard() {
   const [requests, setRequests] = useState<CollaborationRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [feed, setFeed] = useState<any[]>([]);
+  const [showTour, setShowTour] = useState(false);
+  const { tourCompleted, completeTour } = useOnboarding();
 
   useEffect(() => {
     const load = async () => {
@@ -56,18 +60,27 @@ export default function Dashboard() {
             </div>
             <p className="text-gray-500 dark:text-gray-400 mt-1">Here's what's happening with your projects and collaborations.</p>
           </div>
-          <Link
-            to="/profile"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-[12px] text-sm font-semibold transition-all"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Edit Profile
-          </Link>
+          <div className="flex items-center gap-2">
+            {!tourCompleted && (
+              <button onClick={() => setShowTour(true)} className="px-4 py-2 text-sm font-medium bg-[#6C4CF1]/10 text-[#6C4CF1] rounded-[12px] hover:bg-[#6C4CF1]/20 transition cursor-pointer">
+                Take Tour
+              </button>
+            )}
+            <Link
+              to="/profile"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-[12px] text-sm font-semibold transition-all"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Edit Profile
+            </Link>
+          </div>
         </div>
       </div>
+
+      <OnboardingChecklist />
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -230,6 +243,7 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+      {showTour && <OnboardingTour onComplete={() => { completeTour(); setShowTour(false); }} />}
     </motion.div>
   );
 }

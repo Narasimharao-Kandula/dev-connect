@@ -85,5 +85,16 @@ jobs:
       - name: TypeScript check
         run: npx tsc -b
 
+      - name: Run tests
+        run: npm test
+
       - name: Build
         run: npm run build
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Run e2e tests
+        run: npm run test:e2e
+        env:
+          VITE_API_URL: https://dev-connect-api.onrender.com

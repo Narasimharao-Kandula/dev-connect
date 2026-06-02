@@ -1,0 +1,71 @@
+{
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "discover": "Découvrir",
+    "projects": "Projets",
+    "chats": "Discussions",
+    "notifications": "Notifications",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "admin": "Admin",
+    "signOut": "Déconnexion",
+    "signIn": "Connexion",
+    "createAccount": "Créer un compte"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "confirm": "Confirmer",
+    "search": "Rechercher",
+    "noResults": "Aucun résultat",
+    "back": "Retour",
+    "close": "Fermer",
+    "submit": "Envoyer",
+    "upload": "Télécharger"
+  },
+  "home": {
+    "heroTitle": "Là où les développeurs construisent ensemble",
+    "heroSubtitle": "Connectez-vous avec des développeurs, collaborez sur des projets et créez votre équipe de rêve.",
+    "getStarted": "Commencer",
+    "learnMore": "En savoir plus"
+  },
+  "discover": {
+    "title": "Découvrir des développeurs",
+    "searchPlaceholder": "Rechercher par nom, compétences...",
+    "skills": "Compétences",
+    "availability": "Disponibilité",
+    "anyAvailability": "Toute disponibilité",
+    "available": "Disponible",
+    "busy": "Occupé",
+    "collabScore": "Score de collaboration",
+    "filters": "Filtres"
+  },
+  "chat": {
+    "title": "Messages",
+    "newChat": "Nouvelle discussion",
+    "typeMessage": "Écrivez un message...",
+    "send": "Envoyer",
+    "typing": "écrit...",
+    "noMessages": "Aucun message pour le moment.",
+    "noConversations": "Aucune conversation."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Tout marquer lu",
+    "noNotifications": "Aucune notification.",
+    "dismiss": "Ignorer"
+  },
+  "auth": {
+    "signIn": "Connexion",
+    "signUp": "Inscription",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas de compte ?",
+    "hasAccount": "Déjà un compte ?"
+  }
+}

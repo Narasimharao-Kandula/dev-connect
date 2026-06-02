@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { env } from "./config/env";
 import { errorHandler } from "./middleware/errorHandler";
 import { apiLimiter } from "./middleware/rateLimit";
+import { sanitizeInput } from "./middleware/sanitize";
 
 import authRoutes from "./modules/auth/auth.routes";
 import usersRoutes from "./modules/users/users.routes";
@@ -23,6 +24,11 @@ import tasksRoutes from "./modules/tasks/tasks.routes";
 import followRoutes from "./modules/follow/follow.routes";
 import adminRoutes from "./modules/admin/admin.routes";
 import matchRoutes from "./modules/match/match.routes";
+import moderationRoutes from "./modules/moderation/moderation.routes";
+import activityRoutes from "./modules/activity/activity.routes";
+import exportRoutes from "./modules/export/export.routes";
+import groupsRoutes from "./modules/groups/groups.routes";
+import achievementsRoutes from "./modules/achievements/achievements.routes";
 
 const app = express();
 
@@ -30,6 +36,7 @@ app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api", apiLimiter);
+app.use("/api", sanitizeInput);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
@@ -48,7 +55,12 @@ app.use("/api/tasks", tasksRoutes);
 app.use("/api/follow", followRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/moderation", moderationRoutes);
 app.use("/api/match", matchRoutes);
+app.use("/api", activityRoutes);
+app.use("/api", exportRoutes);
+app.use("/api/groups", groupsRoutes);
+app.use("/api/achievements", achievementsRoutes);
 app.use("/uploads", express.static("uploads"));
 
 app.get("/api/health", (_req, res) => {

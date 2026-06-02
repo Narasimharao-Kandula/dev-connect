@@ -12,20 +12,29 @@ export default function TeamChat() {
   const [messages, setMessages] = useState<GroupMessage[]>([]);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const load = async () => {
-      const { data: project } = await api.get(`/projects/${id}`);
-      const teamData = project.team;
-      setTeam(teamData);
-      if (teamData) {
-        const { data: msgs } = await api.get(`/teams/${teamData.id}/messages`);
-        setMessages(msgs);
+      try {
+        const { data: project } = await api.get(`/projects/${id}`);
+        const teamData = project.team;
+        setTeam(teamData);
+        if (teamData) {
+          const { data: msgs } = await api.get(`/teams/${teamData.id}/messages`);
+          setMessages(msgs);
+          socket.emit('team:join', { teamId: teamData.id });
+        }
+      } catch {
+        setError('Failed to load team chat');
       }
       setLoading(false);
     };
     load();
+    return () => {
+      if (team) socket.emit('team:leave', { teamId: team.id });
+    };
   }, [id]);
 
   useEffect(() => {
@@ -44,6 +53,8 @@ export default function TeamChat() {
     socket.emit('team:send', { teamId: team.id, content: content.trim() });
     setContent('');
   };
+
+  if (error) return <div className="text-center py-12 text-red-500">{error}</div>;
 
   if (loading) return <LoadingPage />;
   if (!team) return <div className="text-center py-12 text-gray-500 dark:text-gray-400">A team hasn't been assembled for this project yet.</div>;

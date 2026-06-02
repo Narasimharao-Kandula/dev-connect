@@ -16,6 +16,17 @@ function getTransporter() {
 
 const FROM = `"DevConnect" <${env.SMTP_FROM}>`;
 
+const TYPE_ICONS: Record<string, string> = {
+  collab_request: '🤝',
+  collab_accepted: '✅',
+  collab_rejected: '❌',
+  match_found: '🎯',
+  project_update: '📋',
+  review_received: '⭐',
+  team_invite: '👥',
+  follow: '👤',
+};
+
 export async function sendPasswordResetEmail(email: string, name: string, token: string) {
   const resetUrl = `${env.CLIENT_URL}/reset-password/${token}`;
 
@@ -70,6 +81,57 @@ function getResetHtml(name: string, resetUrl: string) {
         <p style="color: #64748B; font-size: 14px; line-height: 1.6; margin: 0 0 24px;">Hi ${name}, we received a request to reset your password. Click the button below to choose a new one. This link expires in 24 hours.</p>
         <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #6C4CF1, #8B5CF6); color: white; text-decoration: none; padding: 12px 32px; border-radius: 12px; font-weight: 600; font-size: 14px;">Reset Password</a>
         <p style="color: #94A3B8; font-size: 12px; margin-top: 24px;">If you didn't request this, you can safely ignore this email.</p>
+      </div>
+    </div>
+  `;
+}
+
+export async function sendNotificationEmail(email: string, name: string, type: string, message: string) {
+  if (!env.SMTP_PASS) {
+    console.log(`\n📧 [DEV] Notification email for ${email}:`);
+    console.log(`  To: ${email}`);
+    console.log(`  Type: ${type}`);
+    console.log(`  Message: ${message}\n`);
+    return;
+  }
+
+  const transporter = getTransporter()!;
+  await transporter.sendMail({
+    from: FROM,
+    to: email,
+    subject: `DevConnect — ${type.replace(/_/g, ' ')}`,
+    html: getNotificationHtml(name, message, type),
+  });
+}
+
+function getNotificationHtml(name: string, message: string, type: string) {
+  const icon = TYPE_ICONS[type] || '🔔';
+  const subjectLine: Record<string, string> = {
+    collab_request: 'New Collaboration Request',
+    collab_accepted: 'Collaboration Accepted',
+    collab_rejected: 'Collaboration Declined',
+    match_found: 'Project Match Found',
+    project_update: 'Project Update',
+    review_received: 'New Review',
+    team_invite: 'Team Invitation',
+    follow: 'New Follower',
+  };
+  const title = subjectLine[type] || 'Notification';
+  return `
+    <div style="font-family: 'Inter', -apple-system, sans-serif; max-width: 480px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
+      <div style="background: linear-gradient(135deg, #6C4CF1, #8B5CF6); padding: 32px; text-align: center;">
+        <div style="font-size: 36px; margin-bottom: 8px;">${icon}</div>
+        <h1 style="color: white; font-size: 20px; margin: 0; font-weight: 700;">DevConnect</h1>
+      </div>
+      <div style="padding: 32px;">
+        <h2 style="font-size: 16px; color: #0F172A; margin: 0 0 8px;">${title}</h2>
+        <p style="color: #64748B; font-size: 14px; line-height: 1.6; margin: 0 0 16px;">Hi ${name},</p>
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+          <p style="color: #0F172A; font-size: 14px; line-height: 1.6; margin: 0;">${message}</p>
+        </div>
+        <a href="${env.CLIENT_URL}/notifications" style="display: inline-block; background: linear-gradient(135deg, #6C4CF1, #8B5CF6); color: white; text-decoration: none; padding: 12px 32px; border-radius: 12px; font-weight: 600; font-size: 14px;">View in DevConnect</a>
+        <hr style="border: none; border-top: 1px solid #E2E8F0; margin: 24px 0 0;">
+        <p style="color: #94A3B8; font-size: 11px; margin: 12px 0 0;">You received this email because you have notifications enabled for this type. <a href="${env.CLIENT_URL}/settings" style="color: #6C4CF1; text-decoration: underline;">Manage preferences</a></p>
       </div>
     </div>
   `;

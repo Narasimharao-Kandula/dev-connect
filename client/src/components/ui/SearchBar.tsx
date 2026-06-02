@@ -1,7 +1,23 @@
-import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/client';
+
+const RECENT_KEY = 'devconnect_recent_searches';
+
+function getRecentSearches(): string[] {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch { return []; }
+}
+
+function addRecentSearch(q: string) {
+  const list = getRecentSearches().filter((s) => s !== q);
+  list.unshift(q);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 8)));
+}
+
+function clearRecentSearches() {
+  localStorage.removeItem(RECENT_KEY);
+}
 
 interface UserSuggestion {
   id: string;
@@ -29,9 +45,18 @@ export default function SearchBar() {
   const [results, setResults] = useState<{ users: UserSuggestion[]; projects: ProjectSuggestion[]; skills: SkillSuggestion[] }>({ users: [], projects: [], skills: [] });
   const [open, setOpen] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(-1);
+  const [recentSearches, setRecentSearches] = useState<string[]>(getRecentSearches);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  const doSearch = useCallback((q: string) => {
+    addRecentSearch(q);
+    setRecentSearches(getRecentSearches());
+    navigate(`/search?q=${encodeURIComponent(q)}`);
+    setOpen(false);
+    setQuery('');
+  }, [navigate]);
 
   useEffect(() => {
     if (query.trim().length < 1) { setResults({ users: [], projects: [], skills: [] }); setOpen(false); return; }
@@ -54,7 +79,7 @@ export default function SearchBar() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const totalItems = results.users.length + results.projects.length + results.skills.length;
+  const totalItems = results.users.length + results.projects.length + results.skills.length + (!query.trim() ? recentSearches.length : 0);
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!open) return;
@@ -76,8 +101,7 @@ export default function SearchBar() {
         }
         setOpen(false);
       } else if (query.trim()) {
-        navigate(`/search?q=${encodeURIComponent(query)}`);
-        setOpen(false);
+        doSearch(query);
       }
     } else if (e.key === 'Escape') setOpen(false);
   };
@@ -109,7 +133,7 @@ export default function SearchBar() {
       </div>
 
       <AnimatePresence>
-        {open && totalItems > 0 && (
+        {open && (totalItems > 0 || (!query.trim() && recentSearches.length > 0)) && (
           <motion.div
             initial={{ opacity: 0, y: -6, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -117,6 +141,29 @@ export default function SearchBar() {
             transition={{ duration: 0.15 }}
             className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl shadow-black/5 overflow-hidden z-50"
           >
+            {!query.trim() && recentSearches.length > 0 && (
+              <div key="recent">
+                <div className="flex items-center justify-between px-4 pt-3 pb-1">
+                  <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">🕐 Recent</span>
+                  <button onClick={() => { clearRecentSearches(); setRecentSearches([]); }} className="text-[10px] text-gray-400 hover:text-red-500 transition-colors cursor-pointer">Clear</button>
+                </div>
+                {recentSearches.map((s) => {
+                  const idx = globalIdx++;
+                  return (
+                    <button key={s}
+                      onMouseEnter={() => setSelectedIdx(idx)}
+                      onClick={() => doSearch(s)}
+                      className={`w-full flex items-center gap-3 px-4 py-2 text-left text-sm transition-colors cursor-pointer ${
+                        idx === selectedIdx ? 'bg-[#6C4CF1]/5 text-[#6C4CF1]' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                      }`}
+                    >
+                      <span className="text-gray-400 text-xs">🕐</span>
+                      <span className="truncate">{s}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {sections.map((section) => {
               if (section.items.length === 0) return null;
               const startIdx = globalIdx;
@@ -190,7 +237,7 @@ export default function SearchBar() {
 
             <div className="border-t border-gray-50 dark:border-gray-800 px-4 py-2.5">
               <button
-                onClick={() => { navigate(`/search?q=${encodeURIComponent(query)}`); setOpen(false); }}
+                onClick={() => doSearch(query)}
                 className="w-full text-center text-xs text-gray-400 dark:text-gray-500 hover:text-[#6C4CF1] transition-colors cursor-pointer"
               >
                 View all results for "<span className="font-medium">{query}</span>"

@@ -106,7 +106,7 @@ export default function Profile() {
           <div className="flex items-center gap-4">
             <div className="relative">
               {avatarUrl ? (
-                <img src={avatarUrl} alt="" className="w-16 h-16 rounded-full object-cover" />
+                <img src={avatarUrl} alt={`${user?.name}'s avatar`} loading="lazy" className="w-16 h-16 rounded-full object-cover" />
               ) : (
                 <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xl text-gray-400 dark:text-gray-500">
                   {user?.name?.charAt(0).toUpperCase() || '?'}

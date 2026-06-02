@@ -8,11 +8,25 @@ interface GetUsersParams {
   remoteOnly?: string;
   openToCollab?: string;
   search?: string;
+  availability?: string;
+  minScore?: string;
+  currentUserId?: string;
 }
 
 export class UserService {
   async getUsers(params: GetUsersParams) {
-    const where: any = {};
+    const where: any = {
+      deletedAt: null,
+    };
+
+    if (params.currentUserId) {
+      where.NOT = {
+        OR: [
+          { blockedUsers: { some: { blockedId: params.currentUserId } } },
+          { blockedBy: { some: { blockerId: params.currentUserId } } },
+        ],
+      };
+    }
 
     if (params.skill) {
       where.skills = {
@@ -27,6 +41,12 @@ export class UserService {
     }
     if (params.openToCollab === "true") {
       where.profile = { ...where.profile, openToCollab: true };
+    }
+    if (params.availability) {
+      where.availability = params.availability as any;
+    }
+    if (params.minScore) {
+      where.collaborationScore = { gte: parseFloat(params.minScore) };
     }
     if (params.search) {
       where.OR = [
@@ -46,6 +66,7 @@ export class UserService {
         avatar: true,
         availability: true,
         lastActive: true,
+        collaborationScore: true,
         profile: true,
         skills: { include: { skill: true } },
       },

@@ -117,13 +117,13 @@ export default function Settings() {
       <div className="bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-6 space-y-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Password</h2>
         <form onSubmit={handleSubmit(handleChangePassword)} className="space-y-3">
-          <input type="password" placeholder="Current password" {...register('currentPassword')}
+          <input type="password" placeholder="Current password" aria-label="Current password" {...register('currentPassword')}
             className="w-full bg-gray-50/50 dark:bg-gray-800/50 border-2 border-gray-200 dark:border-gray-700 rounded-[14px] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[#6C4CF1] placeholder:text-gray-400 dark:placeholder:text-gray-500" />
           {errors.currentPassword && <p className="text-sm text-red-500">{errors.currentPassword.message}</p>}
-          <input type="password" placeholder="New password (min 6 chars)" {...register('newPassword')}
+          <input type="password" placeholder="New password (min 6 chars)" aria-label="New password" {...register('newPassword')}
             className="w-full bg-gray-50/50 dark:bg-gray-800/50 border-2 border-gray-200 dark:border-gray-700 rounded-[14px] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[#6C4CF1] placeholder:text-gray-400 dark:placeholder:text-gray-500" />
           {errors.newPassword && <p className="text-sm text-red-500">{errors.newPassword.message}</p>}
-          <input type="password" placeholder="Confirm new password" {...register('confirmPassword')}
+          <input type="password" placeholder="Confirm new password" aria-label="Confirm new password" {...register('confirmPassword')}
             className="w-full bg-gray-50/50 dark:bg-gray-800/50 border-2 border-gray-200 dark:border-gray-700 rounded-[14px] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[#6C4CF1] placeholder:text-gray-400 dark:placeholder:text-gray-500" />
           {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>}
           <button type="submit" disabled={isSubmitting}
@@ -149,6 +149,26 @@ export default function Settings() {
             ))}
           </div>
         )}
+      </div>
+
+      <div className="bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-6 space-y-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Notification Preferences</h2>
+        <NotificationPreferences />
+      </div>
+
+      <div className="bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-6 space-y-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Export Your Data</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Download all your data including profile, projects, messages, and notifications as a JSON file.</p>
+        <button onClick={async () => { try { const { data } = await api.get('/export'); const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'devconnect-export.json'; a.click(); URL.revokeObjectURL(url); } catch {} }}
+          className="bg-gradient-to-r from-[#6C4CF1] to-[#5538D6] text-white px-5 py-2.5 rounded-[12px] font-semibold shadow-lg shadow-[#6C4CF1]/20 text-sm transition"
+        >
+          Download My Data
+        </button>
+      </div>
+
+      <div className="bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-6 space-y-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Blocked Users</h2>
+        <BlockedUsersList />
       </div>
 
       <div className="bg-white dark:bg-gray-900 rounded-[20px] border border-gray-100/80 dark:border-gray-800/80 p-6 space-y-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
@@ -194,6 +214,83 @@ Request Account Deletion
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />
+    </div>
+  );
+}
+
+function NotificationPreferences() {
+  const [prefs, setPrefs] = useState<{ type: string; email: boolean }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/notifications/preferences').then(({ data }) => setPrefs(data)).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  const toggle = async (type: string, current: boolean) => {
+    const { data } = await api.put('/notifications/preferences', { type, email: !current });
+    setPrefs((prev) => prev.map((p) => p.type === type ? { ...p, email: data.email } : p));
+  };
+
+  if (loading) return <p className="text-sm text-gray-400">Loading...</p>;
+
+  const labels: Record<string, string> = {
+    collab_request: 'Collaboration Requests',
+    match_found: 'Project Match Found',
+    project_update: 'Project Updates',
+    review_received: 'New Reviews',
+    team_invite: 'Team Invites',
+    follow: 'New Followers',
+  };
+
+  return (
+    <div className="space-y-2">
+      {prefs.map((p) => (
+        <label key={p.type} className="flex items-center justify-between py-2">
+          <span className="text-sm text-gray-700 dark:text-gray-200">{labels[p.type] || p.type}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400">Email</span>
+            <button
+              onClick={() => toggle(p.type, p.email)}
+              className={`w-10 h-5 rounded-full transition cursor-pointer ${p.email ? 'bg-[#6C4CF1]' : 'bg-gray-300 dark:bg-gray-600'}`}
+              aria-label={`${p.email ? 'Disable' : 'Enable'} email for ${labels[p.type] || p.type}`}
+            >
+              <span className={`block w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${p.email ? 'translate-x-5' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
+        </label>
+      ))}
+    </div>
+  );
+}
+
+function BlockedUsersList() {
+  const [blocked, setBlocked] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/moderation/blocked').then(({ data }) => setBlocked(data)).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  const handleUnblock = async (blockedId: string) => {
+    await api.delete(`/moderation/users/${blockedId}/block`).catch(() => {});
+    setBlocked((prev) => prev.filter((b) => b.blocked.id !== blockedId));
+  };
+
+  if (loading) return <p className="text-sm text-gray-400">Loading...</p>;
+  if (blocked.length === 0) return <p className="text-sm text-gray-500 dark:text-gray-400">You haven't blocked anyone.</p>;
+  return (
+    <div className="space-y-2">
+      {blocked.map((b) => (
+        <div key={b.blocked.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-800/50 rounded-lg px-4 py-2">
+          <div className="flex items-center gap-2">
+            <span className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
+              {b.blocked.name.charAt(0).toUpperCase()}
+            </span>
+            <span className="text-sm text-gray-700 dark:text-gray-200">{b.blocked.name}</span>
+          </div>
+          <button onClick={() => handleUnblock(b.blocked.id)} className="text-xs text-[#6C4CF1] hover:text-[#5538D6] transition-colors">Unblock</button>
+        </div>
+      ))}
     </div>
   );
 }

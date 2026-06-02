@@ -31,3 +31,27 @@ export const sendVerificationLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+export const searchLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: { error: "Too many search requests. Please slow down." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+export const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  message: { error: "Too many chat requests. Please slow down." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+export const notificationLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: { error: "Too many notification requests. Please slow down." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});

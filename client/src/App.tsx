@@ -35,6 +35,7 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const OnboardingWizard = lazy(() => import('./pages/OnboardingWizard'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const SearchResults = lazy(() => import('./pages/SearchResults'));
 
 function ProtectedRoute({ children, onOnboarding }: { children: React.ReactNode; onOnboarding?: boolean }) {
   const { token, loading, user } = useAuthStore();
@@ -102,6 +103,7 @@ function AnimatedRoutes() {
             <Route path="/notifications" element={<SL><Notifications /></SL>} />
             <Route path="/chats" element={<SL><Chats /></SL>} />
             <Route path="/chat/:id" element={<SL><ChatRoom /></SL>} />
+            <Route path="/search" element={<SL><SearchResults /></SL>} />
           </Route>
           <Route path="*" element={<Navigate to={tk ? '/dashboard' : '/'} replace />} />
         </Routes>

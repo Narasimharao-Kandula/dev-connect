@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 interface StatCardProps {
   label: string;
   value: string | number;
@@ -6,7 +8,7 @@ interface StatCardProps {
   color?: string;
 }
 
-export default function StatCard({ label, value, icon, trend, color = '#6C4CF1' }: StatCardProps) {
+const StatCard = memo(function StatCard({ label, value, icon, trend, color = '#6C4CF1' }: StatCardProps) {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-[20px] p-5 border border-gray-100/80 dark:border-gray-800/80 transition-all duration-300 card-hover" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
       <div className="flex items-start justify-between">
@@ -24,4 +26,6 @@ export default function StatCard({ label, value, icon, trend, color = '#6C4CF1' 
       </div>
     </div>
   );
-}
+});
+
+export default StatCard;
