@@ -32,7 +32,8 @@ import achievementsRoutes from "./modules/achievements/achievements.routes";
 
 const app = express();
 
-app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
+const allowedOrigins = env.CLIENT_URL.split(",").map(s => s.trim());
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api", apiLimiter);

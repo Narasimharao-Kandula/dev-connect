@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: dev-connect-api
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "5000"
+      - key: CLIENT_URL
+        value: https://narasimharao-kandula.github.io,http://localhost:5173
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dev-connect-db
+          property: connectionString
+      - key: SMTP_HOST
+        value: smtp.sendgrid.net
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        value: apikey
+      - key: SMTP_FROM
+        value: noreply@devconnect.app
+
+databases:
+  - name: dev-connect-db
+    plan: free
+    region: oregon
+    databaseType: postgresql
+    ipAllowList: []

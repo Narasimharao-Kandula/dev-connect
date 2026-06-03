@@ -18,7 +18,7 @@ export function isUserOnline(userId: string): boolean {
 
 export function setupSocket(httpServer: HTTPServer) {
   io = new Server(httpServer, {
-    cors: { origin: env.CLIENT_URL, credentials: true },
+    cors: { origin: env.CLIENT_URL.split(",").map(s => s.trim()), credentials: true },
   });
 
   io.use((socket, next) => {
