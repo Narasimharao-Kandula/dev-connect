@@ -1,0 +1,1491 @@
+================================================================================
+  IMPLEMENTATION WORKFLOW
+  DevConnect — Developer Collaboration Platform
+================================================================================
+
+  Project:     DevConnect (DevTinder)
+  Stack:       React 19 + Vite + TypeScript (Frontend)
+               Express + TypeScript + Prisma (Backend)
+               PostgreSQL 16 (Database)
+               Socket.IO (Real-Time)
+               GitHub Pages + Render (Deployment)
+
+================================================================================
+  STAGE 1: REQUIREMENT ANALYSIS
+================================================================================
+
+  Objective: Identify business needs, define user stories, and finalize
+  feature scope for the developer collaboration platform.
+
+  1.1  Identify Target Users
+  ──────────────────────────
+    Target Audience: Software developers of all skill levels
+    User Personas:
+      - Junior Developer: Seeks mentorship and project experience
+      - Senior Developer: Looks for team members for side projects
+      - Hobbyist: Wants to contribute to open-source
+      - Startup Founder: Needs co-founders with complementary skills
+
+  1.2  Define Core Business Needs
+  ────────────────────────────────
+    Need 1: Developer Discovery
+      - Search developers by skill, location, availability
+      - View detailed developer profiles with collaboration history
+      - Follow/unfollow developers
+
+    Need 2: Real-Time Collaboration
+      - Instant messaging between developers
+      - Team chat rooms for project groups
+      - Live notifications for requests and updates
+
+    Need 3: Project Management
+      - Create and manage projects with skill requirements
+      - Kanban-style task tracking
+      - Team member management
+
+    Need 4: Smart Matchmaking
+      - Match developers to projects based on skills
+      - Suggest team members with complementary skills
+      - Automated collaboration score tracking
+
+    Need 5: User Management
+      - Email/password registration with email verification
+      - OAuth login via Google and GitHub
+      - Password reset flow
+      - Profile management with skills
+
+  1.3  Define Functional Requirements
+  ────────────────────────────────────
+    FR-01: User registration with name, email, and password
+    FR-02: Email verification via token
+    FR-03: Login with email/password or OAuth (Google, GitHub)
+    FR-04: Password reset via email link
+    FR-05: Profile creation with bio, skills, experience, avatar
+    FR-06: Full-text search across users and projects
+    FR-07: Skill-based filtering
+    FR-08: Project CRUD with skill tagging
+    FR-09: Kanban task board with drag-and-drop
+    FR-10: Team creation and member management
+    FR-11: 1:1 real-time chat with typing indicators
+    FR-12: Team group chat rooms
+    FR-13: Send and manage collaboration requests
+    FR-14: Real-time notifications
+    FR-15: Follow/unfollow developers
+    FR-16: Rate and review collaborators
+    FR-17: Bookmark projects
+    FR-18: Admin dashboard with platform stats
+    FR-19: Dark/light theme
+    FR-20: Internationalization (4 languages)
+
+  1.4  Define Non-Functional Requirements
+  ──────────────────────────────────────
+    NFR-01: API response times under 500ms for 95% of requests
+    NFR-02: WebSocket message delivery under 100ms
+    NFR-03: Support concurrent WebSocket connections
+    NFR-04: Rate limiting on auth endpoints (10 req/15min)
+    NFR-05: Password hashing with bcrypt (12 rounds)
+    NFR-06: Input sanitization against XSS
+    NFR-07: JWT-based stateless authentication
+    NFR-08: Responsive design supporting mobile and desktop
+    NFR-09: Dark and light theme support
+    NFR-10: Test coverage >90% for critical paths
+
+  1.5  Expected Result
+  ────────────────────
+    A comprehensive requirements document listing:
+    - 5 user personas
+    - 4 core business needs
+    - 20 functional requirements (FR-01 to FR-20)
+    - 10 non-functional requirements (NFR-01 to NFR-10)
+    - Prioritized feature backlog using MoSCoW framework
+
+================================================================================
+  STAGE 2: DESIGN
+================================================================================
+
+  Objective: Create wireframes, database schema, API contracts, and
+  real-time event design before writing code.
+
+  2.1  Create Wireframes
+  ──────────────────────
+    Tools: Figma, Excalidraw, or pen-and-paper
+
+    Pages to wireframe:
+      - Landing Page (hero, features preview, sign-up CTA)
+      - Auth Page (login/signup tabs, OAuth buttons)
+      - Dashboard (stats cards, recent activity, quick actions)
+      - Discover (developer cards, search bar, filters)
+      - Developer Profile (avatar, bio, skills, projects, reviews)
+      - Project Detail (info, Kanban board, team, activity feed)
+      - Chat Room (message list, input, typing indicator)
+      - Notifications (list, mark-read, filter)
+      - Settings (profile edit, notification preferences, theme)
+
+    Expected Result: Wireframe mockups for all 25 pages showing:
+      - Layout structure (header, content area, navigation)
+      - Component placement
+      - User flow between pages
+      - Responsive behavior (mobile vs desktop)
+
+  2.2  Design Database Schema
+  ────────────────────────────
+    1. Identify entities from requirements:
+       User, Profile, Skill, Project, Task, Team, TeamMember,
+       Conversation, Message, Notification, Review, Bookmark,
+       Follow, CollaborationRequest, Block, Report,
+       Group, GroupMember, Achievement, ProjectActivity
+
+    2. Define relationships:
+       - User 1:1 Profile
+       - User M:N Skill (via UserSkill)
+       - Project M:N Skill (via ProjectSkill)
+       - User 1:M Project (owner)
+       - User M:N Conversation (via ConversationParticipant)
+       - Conversation 1:M Message
+       - User 1:M Review (as reviewer and reviewed)
+       - User M:N Follow (self-referential)
+       - Project 1:1 Team
+       - Team 1:M TeamMember
+
+    3. Create Prisma schema (server/prisma/schema.prisma):
+    ```
+    generator client {
+      provider = "prisma-client-js"
+    }
+
+    datasource db {
+      provider = "postgresql"
+      url      = env("DATABASE_URL")
+    }
+
+    enum UserRole { User Admin }
+    enum TaskStatus { Todo InProgress Done }
+    enum Availability { Available Busy LookingForTeam }
+    enum ProjectStatus { Planning InProgress Completed Archived }
+    enum RequestStatus { Pending Accepted Rejected }
+    ```
+
+    4. Run initial migration:
+    ```
+    npx prisma migrate dev --name init
+    npx prisma generate
+    ```
+
+    Expected Result:
+      - Prisma schema with 19 models
+      - PostgreSQL database with all tables created
+      - Prisma client generated for type-safe queries
+      - First migration file in prisma/migrations/
+
+  2.3  Design REST API
+  ─────────────────────
+    Define endpoint structure:
+
+    POST   /api/auth/register        # Register new user
+    POST   /api/auth/login           # Login (rate limited)
+    GET    /api/auth/me              # Get current user
+    POST   /api/auth/forgot-password # Request password reset
+    POST   /api/auth/reset-password  # Reset password
+    GET    /api/auth/google          # Google OAuth
+    GET    /api/auth/github          # GitHub OAuth
+    GET    /api/users                # List users
+    GET    /api/users/:id            # Get user by ID
+    PATCH  /api/users/profile        # Update profile
+    POST   /api/projects             # Create project
+    GET    /api/projects             # List projects
+    GET    /api/projects/:id         # Get project detail
+    PATCH  /api/projects/:id         # Update project
+    POST   /api/projects/:id/team    # Create team
+    POST   /api/teams/:id/members    # Add team member
+    GET    /api/tasks/:projectId     # List tasks
+    POST   /api/tasks/:projectId     # Create task
+    PATCH  /api/tasks/:id            # Update task
+    GET    /api/conversations        # List conversations
+    POST   /api/conversations        # Create conversation
+    GET    /api/conversations/:id/messages  # Get messages
+    POST   /api/conversations/:id/messages  # Send message
+    GET    /api/notifications        # List notifications
+    PATCH  /api/notifications/:id/read      # Mark read
+    GET    /api/search?q=            # Full-text search
+    GET    /api/match/projects/:id/developers  # Match developers
+    POST   /api/upload/avatar        # Upload avatar
+    GET    /api/admin/stats          # Admin stats
+    GET    /api/stats                # Public stats
+    GET    /api/health               # Health check
+
+    Expected Result:
+      - API contract document with 60+ endpoints
+      - Request/response schemas for each endpoint
+      - Authentication requirements per endpoint
+      - Rate limit tiers per endpoint group
+
+  2.4  Design Real-Time Events (Socket.IO)
+  ─────────────────────────────────────────
+    Define event catalog:
+
+    Client → Server:
+      chat:send         { conversationId, content, attachmentUrl? }
+      chat:typing       { conversationId }
+      chat:stop-typing  { conversationId }
+      messages:read     { conversationId, messageIds }
+      team:send         { teamId, content }
+
+    Server → Client:
+      chat:receive        { id, conversationId, senderId, content, createdAt }
+      chat:typing         { conversationId, userId }
+      chat:stop-typing    { conversationId, userId }
+      messages:read       { conversationId, userId, messageIds }
+      team:receive        { id, teamId, senderId, content, createdAt }
+      notification:new    { id, type, message, metadata }
+      user:online         { userId }
+      user:offline        { userId }
+
+    Rooms:
+      user:{userId}       — Private room for user-specific notifications
+      conversation:{id}   — Room for 1:1 chat participants
+      team:{teamId}       — Room for team chat members
+
+    Expected Result:
+      - Complete event catalog with payload schemas
+      - Room naming convention
+      - Authentication mechanism for WebSocket connections
+
+================================================================================
+  STAGE 3: DEVELOPMENT
+================================================================================
+
+  Objective: Build the full-stack application following the design.
+
+  3.1  Initialize Server Backend
+  ──────────────────────────────
+    Commands:
+    ```
+    mkdir server && cd server
+    npm init -y
+    npm install express cors cookie-parser dotenv jsonwebtoken bcryptjs
+    npm install @prisma/client socket.io passport passport-google-oauth20 passport-github2
+    npm install multer nodemailer zod uuid express-rate-limit tsx
+    npm install -D typescript @types/node @types/express @types/cors
+    npm install -D @types/cookie-parser @types/jsonwebtoken @types/bcryptjs
+    npm install -D @types/multer @types/nodemailer @types/passport
+    npm install -D @types/passport-google-oauth20 @types/passport-github2
+    npm install -D @types/uuid @types/supertest
+    npm install -D prisma vitest supertest
+    npx tsc --init
+    ```
+
+    Expected Result:
+    ```
+    added 241 packages
+    tsconfig.json created
+    package.json with all dependencies
+    ```
+
+    package.json scripts:
+    ```json
+    {
+      "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "build": "tsc",
+        "start": "npx prisma generate && npx prisma migrate deploy && tsx src/index.ts",
+        "test": "vitest run",
+        "db:migrate": "prisma migrate dev",
+        "db:push": "prisma db push",
+        "db:seed": "tsx src/seed.ts"
+      }
+    }
+    ```
+
+  3.2  Configure Server Environment
+  ──────────────────────────────────
+    File: server/.env
+    ```
+    DATABASE_URL="postgresql://devconnect:devconnect123@localhost:5432/devconnect?schema=public"
+    JWT_SECRET="devconnect-jwt-secret-change-in-production"
+    JWT_EXPIRES_IN="7d"
+    PORT=5000
+    CLIENT_URL="http://localhost:5173"
+    SERVER_URL="http://localhost:5000"
+    ```
+
+    File: server/src/config/env.ts
+    ```typescript
+    import dotenv from "dotenv";
+    dotenv.config();
+
+    export const env = {
+      PORT: parseInt(process.env.PORT || "5000", 10),
+      DATABASE_URL: process.env.DATABASE_URL || "",
+      JWT_SECRET: process.env.JWT_SECRET || "devconnect-secret",
+      JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
+      CLIENT_URL: process.env.CLIENT_URL || "http://localhost:5173",
+      SERVER_URL: process.env.SERVER_URL || "http://localhost:5000",
+      NODE_ENV: process.env.NODE_ENV || "development",
+      SMTP_HOST: process.env.SMTP_HOST || "smtp.sendgrid.net",
+      SMTP_PORT: parseInt(process.env.SMTP_PORT || "587", 10),
+      SMTP_USER: process.env.SMTP_USER || "apikey",
+      SMTP_PASS: process.env.SMTP_PASS || "",
+      SMTP_FROM: process.env.SMTP_FROM || "noreply@devconnect.app",
+    };
+    ```
+
+    Expected Result: Environment variables loaded and accessible
+    via `env.PORT`, `env.CLIENT_URL`, etc.
+
+  3.3  Set Up PostgreSQL with Docker
+  ────────────────────────────────────
+    File: docker-compose.yml
+    ```yaml
+    services:
+      postgres:
+        image: postgres:16-alpine
+        environment:
+          POSTGRES_USER: devconnect
+          POSTGRES_PASSWORD: devconnect123
+          POSTGRES_DB: devconnect
+        ports:
+          - "5432:5432"
+        volumes:
+          - pgdata:/var/lib/postgresql/data
+    volumes:
+      pgdata:
+    ```
+
+    Commands:
+    ```
+    docker compose up -d
+    npx prisma migrate dev --name init
+    npx prisma generate
+    npx tsx src/seed.ts
+    ```
+
+    Expected Result:
+    ```
+    [+] Running 2/2
+    ✔ Container postgres  Started
+    PostgreSQL is healthy and accepting connections on port 5432
+    Migration "init" applied successfully
+    Prisma Client generated
+    Seed completed: 5 test users created
+    ```
+
+  3.4  Build Express Application Core
+  ────────────────────────────────────
+    File: server/src/app.ts
+    ```typescript
+    import express from "express";
+    import cors from "cors";
+    import cookieParser from "cookie-parser";
+    import { env } from "./config/env";
+    import { errorHandler } from "./middleware/errorHandler";
+    import { apiLimiter } from "./middleware/rateLimit";
+    import { sanitizeInput } from "./middleware/sanitize";
+
+    const app = express();
+
+    const allowedOrigins = env.CLIENT_URL.split(",").map(s => s.trim());
+    app.use(cors({ origin: allowedOrigins, credentials: true }));
+    app.use(express.json());
+    app.use(cookieParser());
+    app.use("/api", apiLimiter);
+    app.use("/api", sanitizeInput);
+
+    // Routes
+    app.use("/api/auth", authRoutes);
+    app.use("/api/users", usersRoutes);
+    app.use("/api/projects", projectsRoutes);
+    app.use("/api", statsRoutes);
+    // ... additional routes
+
+    app.get("/api/health", (_req, res) => {
+      res.json({ status: "ok", timestamp: new Date().toISOString() });
+    });
+
+    app.use(errorHandler);
+
+    export default app;
+    ```
+
+    File: server/src/index.ts
+    ```typescript
+    import { createServer } from "http";
+    import app from "./app";
+    import { setupSocket } from "./socket";
+    import { env } from "./config/env";
+
+    const httpServer = createServer(app);
+    setupSocket(httpServer);
+
+    httpServer.listen(env.PORT, () => {
+      console.log(`DevConnect server running on port ${env.PORT}`);
+    });
+    ```
+
+    Test the server:
+    ```bash
+    npx tsx src/index.ts
+    ```
+
+    Expected Result:
+    ```
+    DevConnect server running on port 5000
+    ```
+
+    Verify health endpoint:
+    ```bash
+    curl http://localhost:5000/api/health
+    ```
+    Expected Response:
+    ```json
+    {"status":"ok","timestamp":"2026-06-03T08:00:00.000Z"}
+    ```
+
+  3.5  Implement Authentication Module
+  ─────────────────────────────────────
+    File: server/src/modules/auth/auth.routes.ts
+    ```typescript
+    import { Router } from "express";
+    import { authenticate } from "../../middleware/auth";
+    import {
+      register, login, getMe, forgotPassword, resetPassword,
+      sendVerification, verifyEmail, onboarding,
+      deleteAccount, cancelDeletion, changePassword,
+      googleAuth, googleCallback, githubAuth, githubCallback,
+    } from "./auth.controller";
+    import { loginLimiter, verificationLimiter } from "../../middleware/rateLimit";
+
+    const router = Router();
+
+    router.post("/register", register);
+    router.post("/login", loginLimiter, login);
+    router.get("/me", authenticate, getMe);
+    router.post("/forgot-password", forgotPassword);
+    router.post("/reset-password", resetPassword);
+    router.post("/send-verification", authenticate, verificationLimiter, sendVerification);
+    router.get("/verify-email/:token", verifyEmail);
+    router.post("/onboarding", authenticate, onboarding);
+    router.get("/google", googleAuth);
+    router.get("/google/callback", googleCallback);
+    router.get("/github", githubAuth);
+    router.get("/github/callback", githubCallback);
+    router.post("/delete-account", authenticate, deleteAccount);
+    router.post("/cancel-deletion", authenticate, cancelDeletion);
+    router.post("/change-password", authenticate, changePassword);
+
+    export default router;
+    ```
+
+    Expected Result:
+    ```bash
+    # Register
+    curl -X POST http://localhost:5000/api/auth/register \
+      -H "Content-Type: application/json" \
+      -d '{"name":"Test User","email":"test@example.com","password":"Password123!"}'
+    ```
+    Response:
+    ```json
+    {
+      "user": { "id": "uuid", "name": "Test User", "email": "test@example.com", "role": "User" },
+      "token": "eyJhbGciOiJIUzI1NiIs..."
+    }
+    ```
+
+    ```bash
+    # Login
+    curl -X POST http://localhost:5000/api/auth/login \
+      -H "Content-Type: application/json" \
+      -d '{"email":"test@example.com","password":"Password123!"}'
+    ```
+    Response:
+    ```json
+    {
+      "user": { "id": "uuid", "name": "Test User", "email": "test@example.com" },
+      "token": "eyJhbGciOiJIUzI1NiIs..."
+    }
+    ```
+
+  3.6  Implement Socket.IO Server
+  ────────────────────────────────
+    File: server/src/socket.ts
+    ```typescript
+    import { Server as HTTPServer } from "http";
+    import { Server } from "socket.io";
+    import jwt from "jsonwebtoken";
+    import { env } from "./config/env";
+
+    let io: Server;
+    const onlineUsers = new Set<string>();
+
+    export function getIO(): Server { return io; }
+    export function isUserOnline(userId: string): boolean {
+      return onlineUsers.has(userId);
+    }
+
+    export function setupSocket(httpServer: HTTPServer) {
+      io = new Server(httpServer, {
+        cors: { origin: env.CLIENT_URL.split(",").map(s => s.trim()), credentials: true },
+      });
+
+      io.use((socket, next) => {
+        const token = socket.handshake.auth.token;
+        const decoded = jwt.verify(token, env.JWT_SECRET) as { userId: string };
+        socket.data.userId = decoded.userId;
+        onlineUsers.add(decoded.userId);
+        next();
+      });
+
+      io.on("connection", (socket) => {
+        socket.join(`user:${socket.data.userId}`);
+        socket.broadcast.emit("user:online", socket.data.userId);
+
+        socket.on("chat:send", async (data) => {
+          // Persist message, emit to conversation room
+        });
+
+        socket.on("chat:typing", (data) => {
+          socket.to(`conversation:${data.conversationId}`)
+            .emit("chat:typing", { conversationId: data.conversationId, userId: socket.data.userId });
+        });
+
+        socket.on("disconnect", () => {
+          onlineUsers.delete(socket.data.userId);
+          socket.broadcast.emit("user:offline", socket.data.userId);
+        });
+      });
+    }
+    ```
+
+    Expected Result:
+    - Server starts on port 5000 with WebSocket support
+    - Socket.IO client can connect with JWT token
+    - Chat messages delivered in real-time to recipients
+    - Online/offline presence broadcast to all connected clients
+    - Typing indicators emitted correctly
+
+  3.7  Initialize Frontend Client
+  ────────────────────────────────
+    Commands:
+    ```
+    npm create vite@latest client -- --template react-ts
+    cd client
+    npm install
+    npm install react-router-dom zustand axios socket.io-client framer-motion
+    npm install react-hook-form @hookform/resolvers zod
+    npm install lucide-react recharts @tanstack/react-table
+    npm install i18next react-i18next
+    npm install sonner cmdk lottie-react react-dropzone
+    npm install @fontsource/geist-sans-hinted
+    npm install -D tailwindcss @tailwindcss/vite
+    npm install -D @types/react @types/react-dom
+    npm install -D vitest @testing-library/react @testing-library/jest-dom jsdom
+    npm install -D @playwright/test
+    ```
+
+    Expected Result:
+    ```
+    Vite project scaffolded successfully
+    + react 19.2.6
+    + typescript 6.0.2
+    + vite 8.0.12
+    + tailwindcss 4.3.0
+    All dependencies installed (node_modules/)
+    ```
+
+  3.8  Configure Vite and Tailwind
+  ─────────────────────────────────
+    File: client/vite.config.ts
+    ```typescript
+    import { defineConfig } from 'vite';
+    import react from '@vitejs/plugin-react';
+    import tailwindcss from '@tailwindcss/vite';
+
+    export default defineConfig({
+      plugins: [react(), tailwindcss()],
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+              'vendor-motion': ['framer-motion'],
+              'vendor-form': ['react-hook-form', '@hookform/resolvers', 'zod'],
+              'vendor-utils': ['axios', 'date-fns'],
+              'vendor-chart': ['recharts'],
+              'vendor-ui': ['lucide-react'],
+              'vendor-net': ['socket.io-client'],
+              'vendor-state': ['zustand'],
+            },
+          },
+        },
+      },
+    });
+    ```
+
+    File: client/src/index.css
+    ```css
+    @import "tailwindcss";
+    @import "@fontsource/geist-sans-hinted/400.css";
+    @import "@fontsource/geist-sans-hinted/500.css";
+    @import "@fontsource/geist-sans-hinted/600.css";
+    @import "@fontsource/geist-sans-hinted/700.css";
+
+    @custom-variant dark (&:where(.dark, .dark *));
+
+    :root {
+      --font-sans: 'Geist Variable', 'Geist', system-ui, sans-serif;
+      --color-primary: #6366f1;
+      --color-primary-dark: #4f46e5;
+      --radius: 0.75rem;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    ```
+
+    Expected Result:
+    ```bash
+    npm run dev
+    ```
+    ```
+    VITE v8.0.16  ready in 350ms
+    ➜  Local:   http://localhost:5173/
+    ➜  Network: http://192.168.x.x:5173/
+    ```
+
+  3.9  Configure API Client
+  ──────────────────────────
+    File: client/src/api/client.ts
+    ```typescript
+    import axios from 'axios';
+
+    const api = axios.create({
+      baseURL: import.meta.env.VITE_API_URL || '/api',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    api.interceptors.request.use((config) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    });
+
+    api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    export default api;
+    ```
+
+    File: client/src/api/socket.ts
+    ```typescript
+    import { io, Socket } from 'socket.io-client';
+
+    let socket: Socket | null = null;
+
+    export function connectSocket(token: string) {
+      socket = io(import.meta.env.VITE_API_URL || '/api', {
+        auth: { token },
+      });
+      return socket;
+    }
+
+    export function getSocket() { return socket; }
+    export function disconnectSocket() {
+      socket?.disconnect();
+      socket = null;
+    }
+    ```
+
+    Expected Result:
+    - Axios interceptors attach JWT token to all requests
+    - 401 responses auto-redirect to login
+    - Socket.IO connects with JWT authentication
+    - API base URL configurable via VITE_API_URL environment variable
+
+  3.10 Set Up Authentication Store (Zustand)
+  ───────────────────────────────────────────
+    File: client/src/store/authStore.ts
+    ```typescript
+    import { create } from 'zustand';
+    import api from '../api/client';
+    import { connectSocket, disconnectSocket } from '../api/socket';
+
+    interface AuthState {
+      user: User | null;
+      token: string | null;
+      loading: boolean;
+      error: string | null;
+
+      login: (email: string, password: string) => Promise<void>;
+      register: (name: string, email: string, password: string) => Promise<void>;
+      logout: () => void;
+      loadUser: () => Promise<void>;
+    }
+
+    export const useAuthStore = create<AuthState>((set, get) => ({
+      user: null,
+      token: localStorage.getItem('token'),
+      loading: false,
+      error: null,
+
+      login: async (email, password) => {
+        set({ loading: true, error: null });
+        try {
+          const { data } = await api.post('/auth/login', { email, password });
+          localStorage.setItem('token', data.token);
+          connectSocket(data.token);
+          set({ user: data.user, token: data.token, loading: false });
+        } catch (err: any) {
+          set({ error: err.response?.data?.error || 'Login failed', loading: false });
+        }
+      },
+
+      register: async (name, email, password) => {
+        set({ loading: true, error: null });
+        try {
+          const { data } = await api.post('/auth/register', { name, email, password });
+          localStorage.setItem('token', data.token);
+          connectSocket(data.token);
+          set({ user: data.user, token: data.token, loading: false });
+        } catch (err: any) {
+          set({ error: err.response?.data?.error || 'Registration failed', loading: false });
+        }
+      },
+
+      logout: () => {
+        localStorage.removeItem('token');
+        disconnectSocket();
+        set({ user: null, token: null });
+      },
+
+      loadUser: async () => {
+        const token = get().token;
+        if (!token) {
+          set({ loading: false });
+          return;
+        }
+        try {
+          const { data } = await api.get('/auth/me');
+          connectSocket(token);
+          set({ user: data, loading: false });
+        } catch {
+          localStorage.removeItem('token');
+          set({ user: null, token: null, loading: false });
+        }
+      },
+    }));
+    ```
+
+    Expected Result:
+    - User can register and receive JWT token
+    - User can login and token is stored in localStorage
+    - Auth state persists across page refreshes (loadUser on mount)
+    - Socket.IO connects automatically after login
+    - Logout clears both token and socket connection
+
+  3.11 Configure React Router
+  ────────────────────────────
+    File: client/src/App.tsx
+    ```typescript
+    import { BrowserRouter, Routes, Route } from 'react-router-dom';
+    import { Suspense, lazy, useEffect } from 'react';
+    import { useAuthStore } from './store/authStore';
+    import { ThemeProvider } from './components/ThemeProvider';
+    import { Toaster } from 'sonner';
+
+    const Landing = lazy(() => import('./pages/Landing'));
+    const AuthPage = lazy(() => import('./pages/AuthPage'));
+    const Dashboard = lazy(() => import('./pages/Dashboard'));
+    const Layout = lazy(() => import('./components/layout/Layout'));
+
+    function App() {
+      const loadUser = useAuthStore((s) => s.loadUser);
+      const token = useAuthStore((s) => s.token);
+
+      useEffect(() => { loadUser(); }, [loadUser]);
+
+      return (
+        <ThemeProvider>
+          <BrowserRouter basename={import.meta.env.BASE_URL}>
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/login" element={<AuthPage />} />
+                <Route path="/dashboard" element={
+                  <PrivateRoute><Layout><Dashboard /></Layout></PrivateRoute>
+                } />
+                {/* Additional routes... */}
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+          <Toaster richColors />
+        </ThemeProvider>
+      );
+    }
+    ```
+
+    Expected Result:
+    - All 25 pages lazy-loaded for code splitting
+    - Protected routes redirect to login if not authenticated
+    - Auth state loaded on app initialization
+    - SEO-friendly base URL configured
+
+  3.12 Connect Frontend to Backend
+  ─────────────────────────────────
+    File: client/.env
+    ```
+    VITE_API_URL=http://localhost:5000
+    ```
+
+    The VITE_API_URL environment variable is used by:
+    - Axios client as baseURL
+    - Socket.IO client as server URL
+
+    For production deployment, set:
+    ```
+    VITE_API_URL=https://dev-connect-api.onrender.com
+    ```
+
+    Expected Result (Full Stack Test):
+    ```bash
+    # Terminal 1: Start backend
+    cd server && npx tsx src/index.ts
+
+    # Terminal 2: Start frontend
+    cd client && npm run dev
+    ```
+
+    ```bash
+    # Test API connection from browser console:
+    fetch('/api/health')
+    ```
+    Response: `{"status":"ok","timestamp":"..."}`
+
+    ```bash
+    # Test authentication flow:
+    # 1. Open http://localhost:5173/login
+    # 2. Fill in email and password
+    # 3. Click Sign In
+    # Result: Redirected to /dashboard with user profile loaded
+    ```
+
+  3.13 Write Tests
+  ─────────────────
+    Server Tests (using Vitest + Supertest):
+    ```bash
+    cd server
+    npx vitest run
+    ```
+
+    Expected Result:
+    ```
+    Test Files  6 passed (6)
+         Tests  78 passed (78)
+    ```
+
+    Client Tests (using Vitest + Testing Library):
+    ```bash
+    cd client
+    npx vitest run
+    ```
+
+    Expected Result:
+    ```
+    Test Files  6 passed (6)
+         Tests  32 passed (32)
+    ```
+
+    E2E Tests (using Playwright):
+    ```bash
+    cd client
+    npm run build
+    npx playwright test
+    ```
+
+    Expected Result:
+    ```
+    Running 6 tests using 4 workers
+    6 passed (12.3s)
+    ```
+
+================================================================================
+  STAGE 4: TESTING
+================================================================================
+
+  Objective: Validate the entire system through unit, integration, and
+  end-to-end testing.
+
+  4.1  Run All Server Tests
+  ────────────────────────
+    Command:
+    ```
+    cd server && npm test
+    ```
+
+    Expected Result:
+    ```
+    Test Files  6 passed (6)
+         Tests  78 passed (78)
+    ```
+
+    Test breakdown:
+    - Phase 1 (Auth): Registration, login, email verification, password reset,
+      OAuth flow, JWT validation, rate limiting (14 tests)
+    - Phase 2 (Users): Profile CRUD, skills update, availability, search (14 tests)
+    - Phase 3 (Projects/Tasks): Project CRUD, Kanban task management,
+      team operations (14 tests)
+    - Phase 4 (Search/Match): Full-text search, skill-based matching,
+      project recommendations (12 tests)
+    - Phase 5 (Chat/Reviews): One-on-one chat, reviews and ratings (12 tests)
+    - Phase 7 (Notifications): CRUD, preferences, real-time delivery (12 tests)
+
+  4.2  Run All Client Tests
+  ────────────────────────
+    Command:
+    ```
+    cd client && npm test
+    ```
+
+    Expected Result:
+    ```
+    Test Files  6 passed (6)
+         Tests  32 passed (32)
+    ```
+
+    Test categories:
+    - Component rendering tests
+    - Store/state management tests
+    - Form validation tests
+    - API client interaction tests
+
+  4.3  Run TypeScript Type Check
+  ──────────────────────────────
+    Command:
+    ```
+    cd client && npx tsc -b
+    ```
+
+    Expected Result:
+    ```
+    (No output — compilation successful)
+    ```
+
+  4.4  Run E2E Tests (Playwright)
+  ────────────────────────────────
+    Command:
+    ```
+    cd client
+    npm run build
+    npm run test:e2e
+    ```
+
+    Expected Result:
+    ```
+    Running 6 tests using 4 workers
+    6 passed (12.3s)
+    ```
+
+    E2E test scenarios:
+    - Login page renders correctly (heading, form, OAuth buttons)
+    - Sign Up tab switches form fields
+    - Validation shows errors for invalid input
+    - Landing page displays hero section
+    - Features page displays feature cards
+    - About page contains project description
+
+  4.5  Manual Testing Checklist
+  ─────────────────────────────
+    □ Registration with email/password
+    □ Login with email/password
+    □ Google OAuth login
+    □ GitHub OAuth login
+    □ Password reset flow
+    □ Email verification
+    □ Profile update (name, bio, avatar)
+    □ Skill selection
+    □ Developer search
+    □ Advanced filtering
+    □ Project creation
+    □ Task creation and drag-and-drop
+    □ Team member management
+    □ One-on-one chat
+    □ Team chat
+    □ File attachment in chat
+    □ Collaboration request send/accept/reject
+    □ Notification delivery
+    □ Follow/unfollow
+    □ Bookmark project
+    □ Dark/light theme toggle
+    □ Language switch (English, Spanish, French, German)
+    □ Responsive layout (mobile viewport)
+    □ Admin dashboard access
+    □ Logout
+
+================================================================================
+  STAGE 5: DEPLOYMENT
+================================================================================
+
+  Objective: Deploy the frontend to GitHub Pages and backend to Render
+  with automated CI/CD pipeline.
+
+  5.1  Push Code to GitHub
+  ────────────────────────
+    Commands:
+    ```
+    git init
+    git add .
+    git commit -m "Initial commit: DevConnect full-stack app"
+    git remote add origin https://github.com/YOUR_USERNAME/dev-connect.git
+    git branch -M main
+    git push -u origin main
+    ```
+
+    Expected Result:
+    ```
+    Enumerating objects: 1234, done.
+    Counting objects: 100% (1234/1234), done.
+    To https://github.com/YOUR_USERNAME/dev-connect.git
+     * [new branch]      main -> main
+    Branch 'main' set up to track remote branch 'main' from 'origin'.
+    ```
+
+  5.2  Configure GitHub Secrets
+  ──────────────────────────────
+    Navigate to: GitHub Repo → Settings → Secrets and variables → Actions
+
+    Add the following secrets:
+    ```
+    VITE_API_URL = https://dev-connect-api.onrender.com
+    ```
+
+    Expected Result: Secret visible in Actions secrets list.
+
+  5.3  Create CI Pipeline
+  ────────────────────────
+    File: .github/workflows/ci.yml
+    ```yaml
+    name: CI
+
+    on:
+      push:
+        branches: [main, master]
+      pull_request:
+        branches: [main, master]
+
+    jobs:
+      server:
+        name: Server — Test
+        runs-on: ubuntu-latest
+        services:
+          postgres:
+            image: postgres:16
+            env:
+              POSTGRES_USER: devconnect
+              POSTGRES_PASSWORD: devconnect123
+              POSTGRES_DB: devconnect_test
+            ports:
+              - 5432:5432
+            options: >-
+              --health-cmd pg_isready
+              --health-interval 10s
+              --health-timeout 5s
+              --health-retries 5
+
+        defaults:
+          run:
+            working-directory: server
+
+        steps:
+          - uses: actions/checkout@v4
+          - uses: actions/setup-node@v4
+            with:
+              node-version: 22
+              cache: npm
+              cache-dependency-path: server/package-lock.json
+
+          - name: Install dependencies
+            run: npm ci
+
+          - name: Run Prisma migrations
+            run: npx prisma migrate deploy
+            env:
+              DATABASE_URL: postgresql://devconnect:devconnect123@localhost:5432/devconnect_test
+
+          - name: Run tests
+            run: npm test
+            env:
+              DATABASE_URL: postgresql://devconnect:devconnect123@localhost:5432/devconnect_test
+              JWT_SECRET: devconnect-jwt-secret-ci
+              CLIENT_URL: http://localhost:5173
+
+      client:
+        name: Client — Build
+        runs-on: ubuntu-latest
+        defaults:
+          run:
+            working-directory: client
+
+        steps:
+          - uses: actions/checkout@v4
+          - uses: actions/setup-node@v4
+            with:
+              node-version: 22
+              cache: npm
+              cache-dependency-path: client/package-lock.json
+
+          - name: Install dependencies
+            run: npm ci
+
+          - name: TypeScript check
+            run: npx tsc -b
+
+          - name: Run tests
+            run: npm test
+
+          - name: Build
+            run: npm run build
+
+          - name: Install Playwright
+            run: npx playwright install --with-deps chromium
+
+          - name: Run e2e tests
+            run: npm run test:e2e
+            env:
+              VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://dev-connect-api.onrender.com' }}
+    ```
+
+    Expected Result:
+    ```
+    CI workflow triggered on push
+    Server tests: 78/78 passing
+    Client build: Success
+    Client tests: 32/32 passing
+    E2E tests: 6/6 passing
+    ```
+
+  5.4  Create Deploy Pipeline (GitHub Pages)
+  ──────────────────────────────────────────
+    File: .github/workflows/deploy.yml
+    ```yaml
+    name: Deploy Client to GitHub Pages
+
+    on:
+      push:
+        branches: [main, master]
+      workflow_dispatch:
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+
+    jobs:
+      build:
+        name: Build Client
+        runs-on: ubuntu-latest
+        defaults:
+          run:
+            working-directory: client
+
+        steps:
+          - uses: actions/checkout@v4
+          - uses: actions/setup-node@v4
+            with:
+              node-version: 22
+              cache: npm
+              cache-dependency-path: client/package-lock.json
+
+          - name: Configure Pages
+            uses: actions/configure-pages@v5
+
+          - name: Derive base path
+            id: base
+            run: echo "path=/$(echo ${{ github.repository }} | cut -d'/' -f2)/" >> $GITHUB_OUTPUT
+
+          - name: Install dependencies
+            run: npm ci
+
+          - name: TypeScript check
+            run: npx tsc -b
+
+          - name: Build with custom base
+            run: npm run build -- --base=${{ steps.configure-pages.outputs.base_path || steps.base.outputs.path }}
+            env:
+              VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://dev-connect-api.onrender.com' }}
+
+          - name: Copy 404.html for SPA routing
+            run: cp dist/index.html dist/404.html
+
+          - name: Upload Pages artifact
+            uses: actions/upload-pages-artifact@v3
+            with:
+              path: client/dist
+
+      deploy:
+        name: Deploy to GitHub Pages
+        needs: build
+        runs-on: ubuntu-latest
+        environment:
+          name: github-pages
+          url: ${{ steps.deployment.outputs.page_url }}
+
+        steps:
+          - name: Deploy
+            id: deployment
+            uses: actions/deploy-pages@v4
+    ```
+
+    Expected Result:
+    ```
+    Deploy workflow triggered on push to main
+    Build step: Success (assets compiled with correct base path)
+    Deploy step: Success
+    Site URL: https://YOUR_USERNAME.github.io/dev-connect/
+    ```
+
+  5.5  Deploy Backend to Render
+  ──────────────────────────────
+    File: render.yaml (place in repository root)
+    ```yaml
+    services:
+      - type: web
+        name: dev-connect-api
+        runtime: node
+        region: oregon
+        plan: free
+        buildCommand: npm ci && npm run build
+        startCommand: npm start
+        healthCheckPath: /api/health
+        envVars:
+          - key: NODE_ENV
+            value: production
+          - key: PORT
+            value: "5000"
+          - key: CLIENT_URL
+            value: https://YOUR_USERNAME.github.io,http://localhost:5173
+          - key: JWT_SECRET
+            generateValue: true
+          - key: JWT_EXPIRES_IN
+            value: 7d
+          - key: DATABASE_URL
+            fromDatabase:
+              name: dev-connect-db
+              property: connectionString
+          - key: SMTP_HOST
+            value: smtp.sendgrid.net
+          - key: SMTP_PORT
+            value: "587"
+          - key: SMTP_USER
+            value: apikey
+          - key: SMTP_FROM
+            value: noreply@devconnect.app
+
+    databases:
+      - name: dev-connect-db
+        plan: free
+        region: oregon
+        databaseType: postgresql
+        ipAllowList: []
+    ```
+
+    Alternative: Manual Deployment via Render Dashboard:
+
+    1. Log in to https://dashboard.render.com/
+    2. Click "New +" → "Web Service"
+    3. Connect your GitHub repository
+    4. Configure:
+       - Name: dev-connect-api
+       - Region: Oregon
+       - Branch: main
+       - Root Directory: server
+       - Build Command: `npm ci && npm run build`
+       - Start Command: `npm start`
+       - Plan: Free
+    5. Add Environment Variables:
+       - NODE_ENV = production
+       - PORT = 5000
+       - CLIENT_URL = https://YOUR_USERNAME.github.io,http://localhost:5173
+       - JWT_SECRET = (generate strong random string)
+       - JWT_EXPIRES_IN = 7d
+    6. Click "Create Web Service"
+    7. After deployment, create a PostgreSQL database:
+       - Click "New +" → "PostgreSQL"
+       - Name: dev-connect-db
+       - Region: Oregon
+       - Plan: Free
+    8. Copy the Internal Database URL
+    9. Go to Web Service → Environment → Add:
+       - DATABASE_URL = (paste the internal URL from step 8)
+
+    Expected Result:
+    ```
+    Service deployed successfully
+    URL: https://dev-connect-api.onrender.com
+    Health check: https://dev-connect-api.onrender.com/api/health → {"status":"ok"}
+    Database: Managed PostgreSQL connected
+    ```
+
+  5.6  Configure GitHub Pages for SPA Routing
+  ────────────────────────────────────────────
+    GitHub Pages serves static files but doesn't natively support
+    client-side routing. When a user navigates directly to
+    `/dev-connect/projects/123`, GitHub Pages looks for a file
+    at that path and returns 404.
+
+    Solution: Copy index.html to 404.html during build:
+    ```
+    cp dist/index.html dist/404.html
+    ```
+
+    This is already included in the deploy.yml workflow (step 5.4).
+
+    Additionally, ensure GitHub Pages settings:
+    1. Go to repository Settings → Pages
+    2. Source: GitHub Actions (not "Deploy from a branch")
+    3. Custom domain (optional): Configure if using a custom domain
+
+    Expected Result:
+    ```
+    Direct navigation to /dev-connect/dashboard → Dashboard page loads
+    Direct navigation to /dev-connect/projects/abc-123 → Project detail loads
+    No 404 errors for any client-side route
+    ```
+
+  5.7  Verify Production Deployment
+  ──────────────────────────────────
+    After deployment completes, verify:
+
+    Frontend Checks:
+    ```
+    # Open in browser:
+    https://YOUR_USERNAME.github.io/dev-connect/
+
+    # Expected: Landing page loads with correct styling and assets
+
+    # Check asset paths:
+    https://YOUR_USERNAME.github.io/dev-connect/assets/index-abc123.css
+    # Expected: Returns CSS file (200)
+
+    # Check SPA routing:
+    https://YOUR_USERNAME.github.io/dev-connect/login
+    # Expected: Auth page loads (not 404)
+
+    # Check favicon:
+    https://YOUR_USERNAME.github.io/dev-connect/favicon.svg
+    # Expected: Returns SVG favicon (200)
+    ```
+
+    Backend Checks:
+    ```
+    curl https://dev-connect-api.onrender.com/api/health
+    # Expected: {"status":"ok","timestamp":"..."}
+
+    curl https://dev-connect-api.onrender.com/api/stats
+    # Expected: {"totalUsers":5,"totalProjects":0,...}
+
+    curl -X POST https://dev-connect-api.onrender.com/api/auth/login \
+      -H "Content-Type: application/json" \
+      -d '{"email":"admin@example.com","password":"admin123"}'
+    # Expected: {"user":{...},"token":"eyJ..."}
+    ```
+
+    CORS Check:
+    ```
+    # From browser developer console on the deployed site:
+    fetch('https://dev-connect-api.onrender.com/api/health')
+    # Expected: Response received (no CORS errors)
+    ```
+
+================================================================================
+  STAGE 6: RESULTS & VERIFICATION
+================================================================================
+
+  Objective: Confirm the deployed system meets all requirements.
+
+  6.1  Functional Verification
+  ────────────────────────────
+    □ Users can register with email/password
+    □ Users can log in with email/password
+    □ Users can log in with Google OAuth
+    □ Users can log in with GitHub OAuth
+    □ Users can reset forgotten passwords
+    □ Users can verify their email
+    □ Users can update their profile and skills
+    □ Users can search for other developers by name and skill
+    □ Users can filter search results by availability and country
+    □ Users can create projects with skill requirements
+    □ Users can create tasks on the Kanban board
+    □ Users can drag and drop tasks between columns
+    □ Users can add team members to projects
+    □ Users can send one-on-one chat messages
+    □ Users can receive messages in real-time
+    □ Users can see typing indicators
+    □ Users can send file attachments in chat
+    □ Users can send collaboration requests
+    □ Users can accept/reject collaboration requests
+    □ Users receive real-time notifications
+    □ Users can follow/unfollow other developers
+    □ Users can bookmark projects
+    □ Users can rate and review collaborators
+    □ Users can switch between dark and light themes
+    □ Users can switch the interface language
+    □ Admins can view platform statistics
+    □ Admins can manage users
+
+  6.2  Non-Functional Verification
+  ────────────────────────────────
+    □ Frontend loads in under 3 seconds on broadband
+    □ API responds in under 500ms for paginated lists
+    □ Chat messages delivered in under 100ms
+    □ Rate limiting blocks excessive login attempts
+    □ Passwords are never returned in API responses
+    □ XSS attempts are sanitized
+    □ Invalid JWT tokens are rejected
+    □ Broken authentication redirects to login
+    □ Application is responsive on mobile (320px+)
+    □ OAuth flows complete without errors
+
+  6.3  Test Results Summary
+  ──────────────────────────
+    Test Suite                Tests    Passed    Rate
+    ───────────────────────────────────────────────────
+    Server — Phase 1 (Auth)     14       14     100%
+    Server — Phase 2 (Users)    14       14     100%
+    Server — Phase 3 (Projects) 14       14     100%
+    Server — Phase 4 (Search)   12       12     100%
+    Server — Phase 5 (Chat)     12       12     100%
+    Server — Phase 7 (Notify)   12       12     100%
+    Server Total                78       78     100%
+    Client Unit Tests           32       32     100%
+    Client E2E Tests             6        6     100%
+    ───────────────────────────────────────────────────
+    Grand Total                116      116     100%
+    TypeScript                           No errors
+    Production Build                     Success
+
+  6.4  Final Deployment URLs
+  ──────────────────────────
+    Frontend (Production):    https://YOUR_USERNAME.github.io/dev-connect/
+    Backend API (Production): https://dev-connect-api.onrender.com
+    Health Check:             https://dev-connect-api.onrender.com/api/health
+    CI Pipeline:              https://github.com/YOUR_USERNAME/dev-connect/actions
+    Deploy Pipeline:          https://github.com/YOUR_USERNAME/dev-connect/actions
+    Render Dashboard:         https://dashboard.render.com/
+
+================================================================================
+  END OF IMPLEMENTATION WORKFLOW
+================================================================================
