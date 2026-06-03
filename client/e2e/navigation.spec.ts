@@ -9,7 +9,7 @@ test.describe('Public navigation', () => {
 
   test('features page is accessible', async ({ page }) => {
     await page.goto('/features');
-    await expect(page.getByRole('heading', { name: /features/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /everything you need/i })).toBeVisible();
   });
 
   test('about page loads', async ({ page }) => {
