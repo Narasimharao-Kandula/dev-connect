@@ -9,7 +9,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'list',
   webServer: {
-    command: 'vite preview --port 5173',
+    command: 'npm run preview',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 30000,

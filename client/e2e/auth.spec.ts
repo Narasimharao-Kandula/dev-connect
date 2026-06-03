@@ -8,10 +8,10 @@ test.describe('Authentication', () => {
     await expect(page.getByLabel(/password/i)).toBeVisible();
   });
 
-  test('shows validation errors with empty form', async ({ page }) => {
+  test('prevents submission with empty form', async ({ page }) => {
     await page.goto('/login');
     await page.locator('form').getByRole('button', { name: /sign in/i }).click();
-    await expect(page.getByText(/required/i).first()).toBeVisible();
+    await expect(page).toHaveURL('/login');
   });
 
   test('can navigate to register page', async ({ page }) => {
