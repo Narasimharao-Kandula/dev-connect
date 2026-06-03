@@ -37,6 +37,10 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Derive base path
+        id: base
+        run: echo "path=/$(echo ${{ github.repository }} | cut -d'/' -f2)/" >> $GITHUB_OUTPUT
+
       - name: Install dependencies
         run: npm ci
 
@@ -44,7 +48,7 @@ jobs:
         run: npx tsc -b
 
       - name: Build with custom base
-        run: npm run build -- --base=${{ steps.configure-pages.outputs.base_path || '/' }}
+        run: npm run build -- --base=${{ steps.configure-pages.outputs.base_path || steps.base.outputs.path }}
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
