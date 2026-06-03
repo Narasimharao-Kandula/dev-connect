@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import request from "supertest";
+import bcrypt from "bcryptjs";
 import app from "../app";
 import { prisma } from "../lib/prisma";
 
@@ -7,6 +8,21 @@ let token: string;
 let userId: string;
 
 describe("Phase 7 — Email Service", () => {
+  beforeAll(async () => {
+    await prisma.user.upsert({
+      where: { email: "rahul@example.com" },
+      update: {},
+      create: {
+        email: "rahul@example.com",
+        password: await bcrypt.hash("password123", 12),
+        name: "Rahul Sharma",
+        emailVerified: true,
+        onboardingCompleted: true,
+        role: "Admin",
+      },
+    });
+  });
+
   it("POST /api/auth/forgot-password logs dev email for existing user", async () => {
     const res = await request(app)
       .post("/api/auth/forgot-password")
